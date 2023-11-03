@@ -6,4 +6,5 @@ set(CMAKE_CXX_STANDARD 17)
 add_executable(KarolaScript src/main.cpp
         src/lexer/lexer.h
         src/lexer/lexer.cpp
-        src/ErrorReporter.h)
+        src/ErrorReporter.h
+        src/lexer/Token.h)
