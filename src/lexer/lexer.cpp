@@ -226,6 +226,5 @@ std::vector<Token> scanTokens() {
         tokens.push_back(scanToken());
     }
 
-    tokens.push_back({TOKEN_EOF, lexeme.start, 0, lexeme.line});
     return tokens;
 }
