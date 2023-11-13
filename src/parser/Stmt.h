@@ -1,8 +1,14 @@
 #pragma once
 
 #include <utility>
+#include <vector>
+#include <memory>
+#include <any>
 
-#include "Expr.h"
+#include "../lexer/Token.h"
+//#include "Expr.h"
+
+template <typename R> class Expr;
 
 template<typename R>
 class Block;
@@ -25,43 +31,42 @@ class While;
 template<typename R>
 class Break;
 
-template<typename R>
 class Stmt {
 public:
-    //template<typename R>
+    template<typename R>
     class Visitor {
-        R visitBlockStmt(Block<R> expr) = 0;
-        R visitClassStmt(Class<R> expr) = 0;
-        R visitExpressionStmt(Expression<R> expr) = 0;
-        R visitFunctionStmt(Function<R> expr) = 0;
-        R visitIfStmt(If<R> expr) = 0;
-        R visitPrintStmt(Print<R> expr) = 0;
-        R visitReturnStmt(Return<R> expr) = 0;
-        R visitVarStmt(Let<R> expr) = 0;
-        R visitWhileStmt(While<R> expr) = 0;
-        R visitBreakStmt(Break<R> expr) = 0;
+        public:
+            virtual R visitBlockStmt(Block<R> expr) = 0;
+            virtual R visitClassStmt(Class<R> expr) = 0;
+            virtual R visitExpressionStmt(Expression<R> expr) = 0;
+            virtual R visitFunctionStmt(Function<R> expr) = 0;
+            virtual R visitIfStmt(If<R> expr) = 0;
+            virtual R visitPrintStmt(Print<R> expr) = 0;
+            virtual R visitReturnStmt(Return<R> expr) = 0;
+            virtual R visitVarStmt(Let<R> expr) = 0;
+            virtual R visitWhileStmt(While<R> expr) = 0;
+            virtual R visitBreakStmt(Break<R> expr) = 0;
     };
 
-    //template<typename R>
-    virtual R accept(typename Stmt<R>::Visitor& visitor) = 0;
+    virtual std::any accept(Stmt::Visitor<std::any>& visitor) = 0;
 };
 
 template<typename R>
-class Block : public Stmt<R> {
+class Block : public Stmt {
 public:
-    std::vector<Stmt<R>> m_Statements;
+    std::vector<Stmt> m_Statements;
 
-    Block(const std::vector<Stmt<R>>& statements)
+    Block(std::vector<Stmt>& statements)
             : m_Statements(std::move(statements)) {
     }
 
-    R accept(typename Stmt<R>::Visitor& visitor) override {
+    std::any accept(typename Stmt::Visitor<std::any>& visitor) override {
         return visitor.visitBlockStmt(*this);
     }
 };
 
 template<typename R>
-class Class : public Stmt<R> {
+class Class : public Stmt {
 public:
     Token m_Name;
     std::shared_ptr<Let<R>> m_Superclass;
@@ -73,13 +78,13 @@ public:
             : m_Name(std::move(name)), m_Superclass(std::move(superclass)), m_Methods(std::move(methods)), m_ClassMethods(std::move(classMethods)) {
     }
 
-    R accept(typename Stmt<R>::Visitor& visitor) override {
+    std::any accept(typename Stmt::Visitor<std::any>& visitor) override {
         return visitor.visitClassStmt(*this);
     }
 };
 
 template<typename R>
-class Expression : Stmt<R> {
+class Expression : Stmt {
 public:
     std::shared_ptr<Expr<R>> m_Expression;
 
@@ -87,45 +92,45 @@ public:
                 : m_Expression(std::move(expression)) {
     }
 
-    R accept(typename Stmt<R>::Visitor& visitor) override {
+    std::any accept(typename Stmt::Visitor<std::any>& visitor) override {
         return visitor.visitExpressionStmt(*this);
     }
 };
 
 template<typename R>
-class Function : Stmt<R> {
+class Function : Stmt {
 public:
     Token m_Name;
     std::vector<Token> m_Params;
-    std::vector<Stmt<R>> m_Body;
+    std::vector<Stmt> m_Body;
 
-    Function(const Token& name, std::vector<Token>& params, const std::vector<Stmt<R>>& body)
+    Function(const Token& name, std::vector<Token>& params, std::vector<Stmt>& body)
                 : m_Name(std::move(name)), m_Params(std::move(params)), m_Body(std::move(body)) {
     }
 
-    R accept(typename Stmt<R>::Visitor& visitor) override {
+    std::any accept(typename Stmt::Visitor<std::any>& visitor) override {
         return visitor.visitFunctionStmt(*this);
     }
 };
 
 template<typename R>
-class If : Stmt<R> {
+class If : Stmt {
 public:
     std::shared_ptr<Expr<R>> m_Condition;
-    std::shared_ptr<Stmt<R>> m_ThenBranch;
-    std::shared_ptr<Stmt<R>> m_ElseBranch;
+    std::shared_ptr<Stmt> m_ThenBranch;
+    std::shared_ptr<Stmt> m_ElseBranch;
 
-    If(const std::shared_ptr<Expr<R>>& condition, const std::shared_ptr<Stmt<R>>& thenBranch, const std::shared_ptr<Stmt<R>>& elseBranch)
+    If(const std::shared_ptr<Expr<R>>& condition, std::shared_ptr<Stmt>& thenBranch, std::shared_ptr<Stmt>& elseBranch)
         : m_Condition(std::move(condition)), m_ThenBranch(std::move(thenBranch)), m_ElseBranch(std::move(elseBranch)) {
     }
 
-    R accept(typename Stmt<R>::Visitor& visitor) override {
+    std::any accept(typename Stmt::Visitor<std::any>& visitor) override {
         return visitor.visitIfStmt(*this);
     }
 };
 
 template<typename R>
-class Print : Stmt<R> {
+class Print : Stmt {
 public:
     std::shared_ptr<Expr<R>> m_Expression;
 
@@ -133,13 +138,13 @@ public:
             : m_Expression(std::move(expression)) {
     }
 
-    R accept(typename Stmt<R>::Visitor& visitor) override {
+    std::any accept(typename Stmt::Visitor<std::any>& visitor) override {
         return visitor.visitPrintStmt(*this);
     }
 };
 
 template<typename R>
-class Return : Stmt<R> {
+class Return : Stmt {
 public:
     Token m_Keyword;
     std::shared_ptr<Expr<R>> m_Value;
@@ -148,13 +153,13 @@ public:
             : m_Keyword(std::move(keyword)), m_Value(std::move(value)) {
     }
 
-    R accept(typename Stmt<R>::Visitor& visitor) override {
+    std::any accept(typename Stmt::Visitor<std::any>& visitor) override {
         return visitor.visitReturnStmt(*this);
     }
 };
 
 template<typename R>
-class Let : Stmt<R> {
+class Let : Stmt {
 public:
     Token m_Name;
     std::shared_ptr<Expr<R>> m_Initializer;
@@ -163,28 +168,28 @@ public:
         : m_Name(std::move(name)), m_Initializer(std::move(initializer)) {
     }
 
-    R accept(typename Stmt<R>::Visitor& visitor) override {
+    std::any accept(typename Stmt::Visitor<std::any>& visitor) override {
         return visitor.visitVarStmt(*this);
     }
 };
 
 template<typename R>
-class While : Stmt<R> {
+class While : Stmt {
 public:
     std::shared_ptr<Expr<R>> m_Condition;
-    std::shared_ptr<Stmt<R>> m_Body;
+    std::shared_ptr<Stmt> m_Body;
 
-    While(const std::shared_ptr<Expr<R>>& condition, const std::shared_ptr<Stmt<R>>& body)
+    While(const std::shared_ptr<Expr<R>>& condition, std::shared_ptr<Stmt>& body)
         : m_Condition(std::move(condition)), m_Body(std::move(body)) {
     }
 
-    R accept(typename Stmt<R>::Visitor& visitor) override {
+    std::any accept(typename Stmt::Visitor<std::any>& visitor) override {
         return visitor.visitWhileStmt(*this);
     }
 };
 
 template<typename R>
-class Break : public Stmt<R> {
+class Break : public Stmt {
 public:
     Token m_Keyword;
 
@@ -192,7 +197,7 @@ public:
         : m_Keyword(std::move(keyword)) {
     }
 
-    R accept(typename Stmt<R>::Visitor& visitor) override {
+    std::any accept(typename Stmt::Visitor<std::any>& visitor) override {
         return visitor.visitBreakStmt(*this);
     }
 };
