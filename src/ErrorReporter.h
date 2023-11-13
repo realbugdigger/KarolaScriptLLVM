@@ -3,9 +3,9 @@
 #include "lexer/lexer.h"
 
 //    In a full-featured language implementation, you will likely have multiple ways errors get displayed: on stderr, in an IDE’s error window, logged to a file, etc.
-//    You don’t want that code smeared all over your scanner and parser.
+//    You don’t want that code smeared all over your scanner and Parser.
 
-//    Ideally, we would have an actual abstraction, some kind of “ErrorReporter” interface that gets passed to the scanner and parser so that we can swap out different reporting strategies.
+//    Ideally, we would have an actual abstraction, some kind of “ErrorReporter” interface that gets passed to the scanner and Parser so that we can swap out different reporting strategies.
 
 
 
