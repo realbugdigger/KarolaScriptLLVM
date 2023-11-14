@@ -259,7 +259,7 @@ private:
     std::shared_ptr<Stmt> clazzDeclaration() {
         Token name = consume(TOKEN_IDENTIFIER, "Expect class name.");
 
-        std::shared_ptr<Variable<Object>> superclass;
+        std::shared_ptr<Let> superclass;
         if (match( {TOKEN_LESS} )) {
             consume(TOKEN_IDENTIFIER, "Expect superclass name.");
             superclass = std::shared_ptr<Variable<Object>>(new Variable<Object>(previous()));

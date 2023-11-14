@@ -10,57 +10,45 @@
 
 class Stmt;
 
-template<typename R>
 class Assign;
-template<typename R>
 class Binary;
-template<typename R>
 class Call;
-template<typename R>
 class AnonFunction;
-template<typename R>
 class Get;
-template<typename R>
 class Grouping;
-template<typename R>
 class Logical;
-template<typename R>
 class Set;
-template<typename R>
 class Super;
-template<typename R>
 class This;
-template<typename R>
 class Unary;
-template<typename R>
 class Ternary;
-template<typename R>
 class Variable;
+
+template<typename R>
+class ExprVisitor {
+public:
+    virtual ~ExprVisitor() = default;
+    virtual R visitAssignExpr(Assign expr) = 0;
+    virtual R visitBinaryExpr(Binary expr) = 0;
+    virtual R visitCallExpr(Call expr) = 0;
+    virtual R visitAnonFunctionExpr(AnonFunction expr) = 0;
+    virtual R visitGetExpr(Get expr) = 0;
+    virtual R visitGroupingExpr(Grouping expr) = 0;
+    virtual R visitLogicalExpr(Logical expr) = 0;
+    virtual R visitSetExpr(Set expr) = 0;
+    virtual R visitSuperExpr(Super expr) = 0;
+    virtual R visitThisExpr(This expr) = 0;
+    virtual R visitUnaryExpr(Unary expr) = 0;
+    virtual R visitTernaryExpr(Ternary expr) = 0;
+    virtual R visitVariableExpr(Variable expr) = 0;
+};
 
 class Expr {
 public:
-    template<typename R>
-    class Visitor {
-        public:
-            virtual R visitAssignExpr(Assign<R> expr) = 0;
-            virtual R visitBinaryExpr(Binary<R> expr) = 0;
-            virtual R visitCallExpr(Call<R> expr) = 0;
-            virtual R visitAnonFunctionExpr(AnonFunction<R> expr) = 0;
-            virtual R visitGetExpr(Get<R> expr) = 0;
-            virtual R visitGroupingExpr(Grouping<R> expr) = 0;
-            virtual R visitLogicalExpr(Logical<R> expr) = 0;
-            virtual R visitSetExpr(Set<R> expr) = 0;
-            virtual R visitSuperExpr(Super<R> expr) = 0;
-            virtual R visitThisExpr(This<R> expr) = 0;
-            virtual R visitUnaryExpr(Unary<R> expr) = 0;
-            virtual R visitTernaryExpr(Ternary<R> expr) = 0;
-            virtual R visitVariableExpr(Variable<R> expr) = 0;
-    };
-
-    virtual std::any accept(typename Expr::Visitor<std::any>& visitor) = 0;
+    virtual ~Expr() = default;
+    virtual std::any accept(ExprVisitor<std::any>& visitor) = 0;
 };
 
-template<typename R>
 class Assign : public Expr {
 public:
     Token m_Name;
@@ -70,12 +58,11 @@ public:
             : m_Name(std::move(name)), m_Value(std::move(value)) {
     }
 
-    std::any accept(typename Expr::Visitor<std::any>& visitor) override {
+    std::any accept(ExprVisitor<std::any>& visitor) override {
         return visitor.visitAssignExpr(*this);
     }
 };
 
-template<typename R>
 class Binary : Expr {
 public:
     std::shared_ptr<Expr> m_Left;
@@ -86,43 +73,40 @@ public:
             : m_Left(std::move(left)), m_Operator(std::move(operator_)), m_Right(std::move(right)) {
     }
 
-    std::any accept(typename Expr::Visitor<std::any>& visitor) override {
+    std::any accept(ExprVisitor<std::any>& visitor) override {
         return visitor.visitBinaryExpr(*this);
     }
 };
 
-template<typename R>
 class Call : Expr {
 public:
     std::shared_ptr<Expr> m_Callee;
     Token m_Paren;
-    std::vector<Expr> m_Arguments;
+    std::vector<std::shared_ptr<Expr>> m_Arguments;
 
-    Call(std::shared_ptr<Expr>& callee, Token& paren, std::vector<Expr>& arguments)
+    Call(std::shared_ptr<Expr>& callee, Token& paren, std::vector<std::shared_ptr<Expr>>& arguments)
             : m_Callee(std::move(callee)), m_Paren(std::move(paren)), m_Arguments(std::move(arguments)) {
     }
 
-    std::any accept(typename Expr::Visitor<std::any>& visitor) override {
+    std::any accept(ExprVisitor<std::any>& visitor) override {
         return visitor.visitCallExpr(*this);
     }
 };
 
-template<typename R>
 class AnonFunction : Expr {
 public:
     std::vector<Token> m_Params;
-    std::vector<Stmt> m_Body;
+    std::vector<std::shared_ptr<Stmt>> m_Body;
 
-    AnonFunction(std::vector<Token>& params, std::vector<Stmt>& body)
+    AnonFunction(std::vector<Token>& params, std::vector<std::shared_ptr<Stmt>>& body)
             : m_Params(std::move(params)), m_Body(std::move(body)) {
     }
 
-    std::any accept(typename Expr::Visitor<std::any>& visitor) override {
+    std::any accept(ExprVisitor<std::any>& visitor) override {
         return visitor.visitAnonFunctionExpr(*this);
     }
 };
 
-template<typename R>
 class Get : Expr {
 public:
     Token m_Name;
@@ -132,12 +116,11 @@ public:
             : m_Name(std::move(name)), m_Object(std::move(object)) {
     }
 
-    std::any accept(typename Expr::Visitor<std::any>& visitor) override {
+    std::any accept(ExprVisitor<std::any>& visitor) override {
         return visitor.visitGetExpr(*this);
     }
 };
 
-template<typename R>
 class Grouping : Expr {
 public:
     std::shared_ptr<Expr> m_Expression;
@@ -146,12 +129,11 @@ public:
                 : m_Expression(std::move(expression)) {
     }
 
-    std::any accept(typename Expr::Visitor<std::any>& visitor) override {
+    std::any accept(ExprVisitor<std::any>& visitor) override {
         return visitor.visitGroupingExpr(*this);
     }
 };
 
-template<typename R>
 class Logical : Expr {
 public:
     std::shared_ptr<Expr> m_Left;
@@ -162,12 +144,11 @@ public:
                 : m_Left(std::move(left)), m_Operator(std::move(operator_)), m_Right(std::move(right)) {
     }
 
-    std::any accept(typename Expr::Visitor<std::any>& visitor) override {
+    std::any accept(ExprVisitor<std::any>& visitor) override {
         return visitor.visitLogicalExpr(*this);
     }
 };
 
-template<typename R>
 class Set : Expr {
 public:
     std::shared_ptr<Expr> m_Object;
@@ -178,12 +159,11 @@ public:
             : m_Object(std::move(object)), m_Name(std::move(name)), m_Value(std::move(value)) {
     }
 
-    std::any accept(typename Expr::Visitor<std::any>& visitor) override {
+    std::any accept(ExprVisitor<std::any>& visitor) override {
         return visitor.visitSetExpr(*this);
     }
 };
 
-template<typename R>
 class Super : Expr {
 public:
     std::vector<Token> m_Keyword;
@@ -193,12 +173,11 @@ public:
             : m_Keyword(std::move(keywords)), m_Method(std::move(methods)) {
     }
 
-    std::any accept(typename Expr::Visitor<std::any>& visitor) override {
+    std::any accept(ExprVisitor<std::any>& visitor) override {
         return visitor.visitSuperExpr(*this);
     }
 };
 
-template<typename R>
 class This : Expr {
 public:
     Token m_Keyword;
@@ -206,12 +185,11 @@ public:
     This(Token& keyword) : m_Keyword(std::move(keyword)) {
     }
 
-    std::any accept(typename Expr::Visitor<std::any>& visitor) override {
+    std::any accept(ExprVisitor<std::any>& visitor) override {
         return visitor.visitThisExpr(*this);
     }
 };
 
-template<typename R>
 class Unary : Expr {
 public:
     Token m_Operator;
@@ -221,12 +199,11 @@ public:
             : m_Operator(operator_), m_Right(right) {
     }
 
-    std::any accept(typename Expr::Visitor<std::any>& visitor) override {
+    std::any accept(ExprVisitor<std::any>& visitor) override {
         return visitor.visitUnaryExpr(*this);
     }
 };
 
-template<typename R>
 class Ternary : Expr {
 public:
     std::shared_ptr<Expr> m_Expr;
@@ -237,12 +214,11 @@ public:
                 : m_Expr(std::move(expr)), m_TrueExpr(std::move(trueExpr)), m_FalseExpr(std::move(falseExpr)) {
     }
 
-    std::any accept(typename Expr::Visitor<std::any>& visitor) override {
+    std::any accept(ExprVisitor<std::any>& visitor) override {
         return visitor.visitTernaryExpr(*this);
     }
 };
 
-template<typename R>
 class Variable : Expr {
 public:
     Token m_VariableName;
@@ -251,7 +227,7 @@ public:
                 : m_VariableName(name) {
     }
 
-    std::any accept(typename Expr::Visitor<std::any>& visitor) override {
+    std::any accept(ExprVisitor<std::any>& visitor) override {
         return visitor.visitVariableExpr(*this);
     }
 };
