@@ -16,6 +16,7 @@ class Call;
 class AnonFunction;
 class Get;
 class Grouping;
+class Literal;
 class Logical;
 class Set;
 class Super;
@@ -34,6 +35,7 @@ public:
     virtual R visitAnonFunctionExpr(AnonFunction expr) = 0;
     virtual R visitGetExpr(Get expr) = 0;
     virtual R visitGroupingExpr(Grouping expr) = 0;
+    virtual R visitLiteralExpr(Literal expr) = 0;
     virtual R visitLogicalExpr(Logical expr) = 0;
     virtual R visitSetExpr(Set expr) = 0;
     virtual R visitSuperExpr(Super expr) = 0;
@@ -63,7 +65,7 @@ public:
     }
 };
 
-class Binary : Expr {
+class Binary : public Expr {
 public:
     std::shared_ptr<Expr> m_Left;
     Token m_Operator;
@@ -78,7 +80,7 @@ public:
     }
 };
 
-class Call : Expr {
+class Call : public Expr {
 public:
     std::shared_ptr<Expr> m_Callee;
     Token m_Paren;
@@ -93,7 +95,7 @@ public:
     }
 };
 
-class AnonFunction : Expr {
+class AnonFunction : public Expr {
 public:
     std::vector<Token> m_Params;
     std::vector<std::shared_ptr<Stmt>> m_Body;
@@ -107,7 +109,7 @@ public:
     }
 };
 
-class Get : Expr {
+class Get : public Expr {
 public:
     Token m_Name;
     std::shared_ptr<Expr> m_Object;
@@ -121,7 +123,7 @@ public:
     }
 };
 
-class Grouping : Expr {
+class Grouping : public Expr {
 public:
     std::shared_ptr<Expr> m_Expression;
 
@@ -134,7 +136,19 @@ public:
     }
 };
 
-class Logical : Expr {
+class Literal : public Expr {
+public:
+    std::any m_Literal;
+
+    explicit Literal(std::any literal) : m_Literal{std::move(literal)} {
+    }
+
+    std::any accept(ExprVisitor<std::any>& visitor) override {
+        return visitor.visitLiteralExpr(*this);
+    }
+};
+
+class Logical : public Expr {
 public:
     std::shared_ptr<Expr> m_Left;
     Token m_Operator;
@@ -149,7 +163,7 @@ public:
     }
 };
 
-class Set : Expr {
+class Set : public Expr {
 public:
     std::shared_ptr<Expr> m_Object;
     Token m_Name;
@@ -164,13 +178,13 @@ public:
     }
 };
 
-class Super : Expr {
+class Super : public Expr {
 public:
-    std::vector<Token> m_Keyword;
-    std::vector<Token> m_Method;
+    Token m_Keyword;
+    Token m_Method;
 
-    Super(std::vector<Token>& keywords, std::vector<Token>& methods)
-            : m_Keyword(std::move(keywords)), m_Method(std::move(methods)) {
+    Super(Token& keyword, Token& method)
+            : m_Keyword(std::move(keyword)), m_Method(std::move(method)) {
     }
 
     std::any accept(ExprVisitor<std::any>& visitor) override {
@@ -178,11 +192,11 @@ public:
     }
 };
 
-class This : Expr {
+class This : public Expr {
 public:
     Token m_Keyword;
 
-    This(Token& keyword) : m_Keyword(std::move(keyword)) {
+    This(const Token& keyword) : m_Keyword(std::move(keyword)) {
     }
 
     std::any accept(ExprVisitor<std::any>& visitor) override {
@@ -190,7 +204,7 @@ public:
     }
 };
 
-class Unary : Expr {
+class Unary : public Expr {
 public:
     Token m_Operator;
     std::shared_ptr<Expr> m_Right;
@@ -204,7 +218,7 @@ public:
     }
 };
 
-class Ternary : Expr {
+class Ternary : public Expr {
 public:
     std::shared_ptr<Expr> m_Expr;
     std::shared_ptr<Expr> m_TrueExpr;
@@ -219,11 +233,11 @@ public:
     }
 };
 
-class Variable : Expr {
+class Variable : public Expr {
 public:
     Token m_VariableName;
 
-    Variable(Token& name)
+    Variable(const Token& name)
                 : m_VariableName(name) {
     }
 

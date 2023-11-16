@@ -30,4 +30,5 @@ typedef struct Token {
     const char* start;
     int length;
     int line;
+    std::string lexeme;
 } Token;

@@ -2,15 +2,19 @@
 #include <iostream>
 
 #include "lexer/lexer.h"
+#include "parser/Parser.h"
 
 
 // Both the prompt and the file runner are thin wrappers around this core function
 static void run(const char* program) {
     initLexer(program);
     std::vector<Token> tokenList = scanTokens();
+    auto* parser = new Parser(tokenList);
+    parser->parse();
     for (auto &t : tokenList) {
         std::cout << t.type << "\n";
     }
+    free(parser);
 }
 
 static void repl() {

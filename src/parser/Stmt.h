@@ -46,7 +46,7 @@ class Block : public Stmt {
 public:
     std::vector<std::shared_ptr<Stmt>> m_Statements;
 
-    explicit Block(std::vector<std::shared_ptr<Stmt>>& statements)
+    explicit Block(const std::vector<std::shared_ptr<Stmt>>& statements)
             : m_Statements(std::move(statements)) {
     }
 
@@ -58,12 +58,11 @@ public:
 class Class : public Stmt {
 public:
     Token m_Name;
-    std::shared_ptr<Let> m_Superclass;
-    std::vector<Function> m_Methods;
-    std::vector<Function> m_ClassMethods;
+    std::shared_ptr<Variable> m_Superclass;
+    std::vector<std::shared_ptr<Function>> m_Methods;
+    std::vector<std::shared_ptr<Function>> m_ClassMethods;
 
-    Class(Token& name, std::shared_ptr<Let>& superclass,
-          std::vector<Function>& methods, std::vector<Function>& classMethods)
+    Class(Token& name, std::shared_ptr<Variable>& superclass, std::vector<std::shared_ptr<Function>>& methods, std::vector<std::shared_ptr<Function>>& classMethods)
             : m_Name(std::move(name)), m_Superclass(std::move(superclass)), m_Methods(std::move(methods)), m_ClassMethods(std::move(classMethods)) {
     }
 
@@ -72,7 +71,7 @@ public:
     }
 };
 
-class Expression : Stmt {
+class Expression : public Stmt {
 public:
     std::shared_ptr<Expr> m_Expression;
 
@@ -85,7 +84,7 @@ public:
     }
 };
 
-class Function : Stmt {
+class Function : public Stmt {
 public:
     Token m_Name;
     std::vector<Token> m_Params;
@@ -100,7 +99,7 @@ public:
     }
 };
 
-class If : Stmt {
+class If : public Stmt {
 public:
     std::shared_ptr<Expr> m_Condition;
     std::shared_ptr<Stmt> m_ThenBranch;
@@ -115,7 +114,7 @@ public:
     }
 };
 
-class Print : Stmt {
+class Print : public Stmt {
 public:
     std::shared_ptr<Expr> m_Expression;
 
@@ -128,7 +127,7 @@ public:
     }
 };
 
-class Return : Stmt {
+class Return : public Stmt {
 public:
     Token m_Keyword;
     std::shared_ptr<Expr> m_Value;
@@ -142,7 +141,7 @@ public:
     }
 };
 
-class Let : Stmt {
+class Let : public Stmt {
 public:
     Token m_Name;
     std::shared_ptr<Expr> m_Initializer;
@@ -156,7 +155,7 @@ public:
     }
 };
 
-class While : Stmt {
+class While : public Stmt {
 public:
     std::shared_ptr<Expr> m_Condition;
     std::shared_ptr<Stmt> m_Body;

@@ -8,6 +8,6 @@ add_executable(KarolaScript src/main.cpp
         src/lexer/lexer.cpp
         src/ErrorReporter.h
         src/lexer/Token.h
-        src/parser/Parser.cpp
+        src/parser/Parser.h
         src/parser/Expr.h
         src/parser/Stmt.h)
