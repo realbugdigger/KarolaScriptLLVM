@@ -10,11 +10,14 @@ typedef struct {
 } Lexeme;
 
 Lexeme lexeme;
+std::string program;
 
 void initLexer(const char* source) {
     lexeme.start = source;
     lexeme.current = source;
     lexeme.line = 1;
+
+    program = source;
 }
 
 static bool isAlpha(char c) {
@@ -62,8 +65,20 @@ static Token makeToken(TokenType type) {
     token.start = lexeme.start;
     token.length = (int)(lexeme.current - lexeme.start);
     token.line = lexeme.line;
+    token.lexeme = "";
     return token;
 }
+
+static Token makeToken(TokenType type, const std::string& literal) {
+    Token token{};
+    token.type = type;
+    token.start = lexeme.start;
+    token.length = (int)(lexeme.current - lexeme.start);
+    token.line = lexeme.line;
+    token.lexeme = literal;
+    return token;
+}
+
 
 // doesn't support nested comments !!!
 static void commentBlock() {
@@ -161,7 +176,8 @@ static Token number() {
         while (isDigit(peek())) advance();
     }
 
-    return makeToken(TOKEN_NUMBER);
+    std::string literal(lexeme.start, (int)(lexeme.current - lexeme.start));
+    return makeToken(TOKEN_NUMBER, literal);
 }
 
 static Token string() {
@@ -174,7 +190,9 @@ static Token string() {
 
     // The closing quote.
     advance();
-    return makeToken(TOKEN_STRING);
+
+    std::string literal(lexeme.start, (int)(lexeme.current - lexeme.start));
+    return makeToken(TOKEN_STRING, literal);
 }
 
 Token scanToken() {
