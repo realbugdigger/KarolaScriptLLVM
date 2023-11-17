@@ -10,4 +10,5 @@ add_executable(KarolaScript src/main.cpp
         src/lexer/Token.h
         src/parser/Parser.h
         src/parser/Expr.h
-        src/parser/Stmt.h)
+        src/parser/Stmt.h
+        src/interpreter/Interpreter.h)

@@ -24,16 +24,16 @@ class Break;
 class StmtVisitor {
 public:
     virtual ~StmtVisitor() = default;
-    virtual void visitBlockStmt(Block expr) = 0;
-    virtual void visitClassStmt(Class expr) = 0;
-    virtual void visitExpressionStmt(Expression expr) = 0;
-    virtual void visitFunctionStmt(Function expr) = 0;
-    virtual void visitIfStmt(If expr) = 0;
-    virtual void visitPrintStmt(Print expr) = 0;
-    virtual void visitReturnStmt(Return expr) = 0;
-    virtual void visitVarStmt(Let expr) = 0;
-    virtual void visitWhileStmt(While expr) = 0;
-    virtual void visitBreakStmt(Break expr) = 0;
+    virtual void visitBlockStmt(Block& stmt) = 0; //
+    virtual void visitClazzStmt(Class& stmt) = 0; //
+    virtual void visitExpressionStmt(Expression& stmt) = 0; //
+    virtual void visitFunctionStmt(Function& stmt) = 0; //
+    virtual void visitIfStmt(If& stmt) = 0; //
+    virtual void visitPrintStmt(Print& stmt) = 0; //
+    virtual void visitReturnStmt(Return& stmt) = 0; //
+    virtual void visitLetStmt(Let& stmt) = 0; //
+    virtual void visitWhileStmt(While& stmt) = 0; //
+    virtual void visitBreakStmt(Break& stmt) = 0; //
 };
 
 class Stmt {
@@ -46,7 +46,7 @@ class Block : public Stmt {
 public:
     std::vector<std::shared_ptr<Stmt>> m_Statements;
 
-    explicit Block(const std::vector<std::shared_ptr<Stmt>>& statements)
+    explicit Block(std::vector<std::shared_ptr<Stmt>>& statements)
             : m_Statements(std::move(statements)) {
     }
 
@@ -67,7 +67,7 @@ public:
     }
 
     void accept(StmtVisitor& visitor) override {
-        return visitor.visitClassStmt(*this);
+        return visitor.visitClazzStmt(*this);
     }
 };
 
@@ -90,7 +90,7 @@ public:
     std::vector<Token> m_Params;
     std::vector<std::shared_ptr<Stmt>> m_Body;
 
-    Function(const Token& name, std::vector<Token>& params, std::vector<std::shared_ptr<Stmt>>& body)
+    Function(Token& name, std::vector<Token>& params, std::vector<std::shared_ptr<Stmt>>& body)
                 : m_Name(std::move(name)), m_Params(std::move(params)), m_Body(std::move(body)) {
     }
 
@@ -105,7 +105,7 @@ public:
     std::shared_ptr<Stmt> m_ThenBranch;
     std::shared_ptr<Stmt> m_ElseBranch;
 
-    If(const std::shared_ptr<Expr>& condition, std::shared_ptr<Stmt>& thenBranch, std::shared_ptr<Stmt>& elseBranch)
+    If(std::shared_ptr<Expr>& condition, std::shared_ptr<Stmt>& thenBranch, std::shared_ptr<Stmt>& elseBranch)
         : m_Condition(std::move(condition)), m_ThenBranch(std::move(thenBranch)), m_ElseBranch(std::move(elseBranch)) {
     }
 
@@ -151,7 +151,7 @@ public:
     }
 
     void accept(StmtVisitor& visitor) override {
-        visitor.visitVarStmt(*this);
+        visitor.visitLetStmt(*this);
     }
 };
 

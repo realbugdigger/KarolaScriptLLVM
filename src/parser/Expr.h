@@ -29,20 +29,20 @@ template<typename R>
 class ExprVisitor {
 public:
     virtual ~ExprVisitor() = default;
-    virtual R visitAssignExpr(Assign expr) = 0;
-    virtual R visitBinaryExpr(Binary expr) = 0;
-    virtual R visitCallExpr(Call expr) = 0;
-    virtual R visitAnonFunctionExpr(AnonFunction expr) = 0;
-    virtual R visitGetExpr(Get expr) = 0;
-    virtual R visitGroupingExpr(Grouping expr) = 0;
-    virtual R visitLiteralExpr(Literal expr) = 0;
-    virtual R visitLogicalExpr(Logical expr) = 0;
-    virtual R visitSetExpr(Set expr) = 0;
-    virtual R visitSuperExpr(Super expr) = 0;
-    virtual R visitThisExpr(This expr) = 0;
-    virtual R visitUnaryExpr(Unary expr) = 0;
-    virtual R visitTernaryExpr(Ternary expr) = 0;
-    virtual R visitVariableExpr(Variable expr) = 0;
+    virtual R visitAssignExpr(Assign& expr) = 0; //
+    virtual R visitBinaryExpr(Binary& expr) = 0; //
+    virtual R visitCallExpr(Call& expr) = 0; //
+    virtual R visitAnonFunctionExpr(AnonFunction& expr) = 0; //
+    virtual R visitGetExpr(Get& expr) = 0; //
+    virtual R visitGroupingExpr(Grouping& expr) = 0; //
+    virtual R visitLiteralExpr(Literal& expr) = 0; //
+    virtual R visitLogicalExpr(Logical& expr) = 0; //
+    virtual R visitSetExpr(Set& expr) = 0; //
+    virtual R visitSuperExpr(Super& expr) = 0; //
+    virtual R visitThisExpr(This& expr) = 0; //
+    virtual R visitUnaryExpr(Unary& expr) = 0; //
+    virtual R visitTernaryExpr(Ternary& expr) = 0; //
+    virtual R visitVariableExpr(Variable& expr) = 0; //
 };
 
 class Expr {
@@ -127,7 +127,7 @@ class Grouping : public Expr {
 public:
     std::shared_ptr<Expr> m_Expression;
 
-    Grouping(std::shared_ptr<Expr>& expression)
+    explicit Grouping(std::shared_ptr<Expr>& expression)
                 : m_Expression(std::move(expression)) {
     }
 
@@ -196,7 +196,7 @@ class This : public Expr {
 public:
     Token m_Keyword;
 
-    This(const Token& keyword) : m_Keyword(std::move(keyword)) {
+    explicit This(const Token& keyword) : m_Keyword(std::move(keyword)) {
     }
 
     std::any accept(ExprVisitor<std::any>& visitor) override {
@@ -237,8 +237,8 @@ class Variable : public Expr {
 public:
     Token m_VariableName;
 
-    Variable(const Token& name)
-                : m_VariableName(name) {
+    explicit Variable(Token& name)
+                : m_VariableName(std::move(name)) {
     }
 
     std::any accept(ExprVisitor<std::any>& visitor) override {
