@@ -259,7 +259,7 @@ private:
             if (match({ TOKEN_LEFT_PAREN })) {
                 expr = finishCall(expr);
             } else if (match({ TOKEN_DOT })) {
-                Token name = consume(TOKEN_IDENTIFIER, "Expect property name after '.'.");
+                Token name = consume(TOKEN_IDENTIFIER, "Expect property m_Name after '.'.");
                 expr = std::make_shared<Get>(name, expr);
             } else {
                 break;
@@ -277,7 +277,7 @@ private:
                     error(peek(), "Can't have more than 255 parameters.");
                 }
 
-                parameters.push_back(consume(TOKEN_IDENTIFIER, "Expect parameter name."));
+                parameters.push_back(consume(TOKEN_IDENTIFIER, "Expect parameter m_Name."));
             } while (match({TOKEN_COMMA}));
         }
         Token errorToken = consume(TOKEN_RIGHT_PAREN, "Expect ')' after parameters.");
@@ -311,7 +311,7 @@ private:
         if (match({ TOKEN_SUPER })) {
             Token keyword = previous();
             consume(TOKEN_DOT, "Expect '.' after 'super'.");
-            Token method = consume(TOKEN_IDENTIFIER,"Expect superclass method name.");
+            Token method = consume(TOKEN_IDENTIFIER,"Expect m_Superclass method m_Name.");
             return std::make_shared<Super>(keyword, method);
         }
 
@@ -480,7 +480,7 @@ private:
     }
 
     std::shared_ptr<Stmt> letDeclaration() {
-        Token name = consume(TOKEN_IDENTIFIER, "Expect variable name.");
+        Token name = consume(TOKEN_IDENTIFIER, "Expect variable m_Name.");
         std::shared_ptr<Expr> initializer;
         if (match( {TOKEN_EQUAL} )) {
             initializer = expression();
@@ -492,15 +492,15 @@ private:
     }
 
     std::shared_ptr<Function> function(const std::string& kind) {
-        Token name = consume(TOKEN_IDENTIFIER, "Expect " + kind + " name.");
-        consume(TOKEN_LEFT_PAREN, "Expect '(' after " + kind + " name.");
+        Token name = consume(TOKEN_IDENTIFIER, "Expect " + kind + " m_Name.");
+        consume(TOKEN_LEFT_PAREN, "Expect '(' after " + kind + " m_Name.");
         std::vector<Token> parameters;
         if (!check(TOKEN_RIGHT_PAREN)) {
             do {
                 if (parameters.size() >= 255) {
                     error(peek(), "Cannot have more than 255 parameters.");
                 }
-                parameters.push_back(consume(TOKEN_IDENTIFIER, "Expect parameter name."));
+                parameters.push_back(consume(TOKEN_IDENTIFIER, "Expect parameter m_Name."));
             } while (match({ TOKEN_COMMA }));
         }
         consume(TOKEN_RIGHT_PAREN, "Expect ')' after parameters.");
@@ -510,11 +510,11 @@ private:
     }
 
     std::shared_ptr<Stmt> clazzDeclaration() {
-        Token name = consume(TOKEN_IDENTIFIER, "Expect class name.");
+        Token name = consume(TOKEN_IDENTIFIER, "Expect class m_Name.");
 
         std::shared_ptr<Variable> superclass;
         if (match( {TOKEN_LESS} )) {
-            consume(TOKEN_IDENTIFIER, "Expect superclass name.");
+            consume(TOKEN_IDENTIFIER, "Expect m_Superclass m_Name.");
             superclass = std::make_shared<Variable>(previous());
         }
 

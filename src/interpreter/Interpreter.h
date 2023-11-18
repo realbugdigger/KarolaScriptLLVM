@@ -6,7 +6,8 @@
 
 #include "../parser/Stmt.h"
 #include "../parser/Expr.h"
-#include "../interpreter/Environment.h"
+#include "Environment.h"
+#include "KarolaScriptInstance.h"
 
 class Interpreter : public StmtVisitor, public ExprVisitor<std::any> {
 private:
@@ -50,12 +51,12 @@ public:
     std::any visitSetExpr(Set& expr) override {
         std::any object = evaluate(expr.m_Object);
 
-        if (object.type() != typeid(KSInstance)) {
+        if (object.type() != typeid(KarolaScriptInstance)) {
             throw RuntimeError(expr.m_Name, "Only instances have fields.");
         }
 
         std::any value = evaluate(expr.m_Value);
-        KSInstance->set(expr.m_Value, value);
+        KarolaScriptInstance->set(expr.m_Value, value);
         return value;
     }
 
@@ -151,7 +152,7 @@ public:
     std::any visitAssignExpr(Assign& expr) override {
         std::any value = evaluate(expr.m_Value);
 
-        // environment->assign(expr->name, value);
+        // environment->assign(expr->m_Name, value);
         auto distance = locals.find(expr);
         if (distance != locals.end()) {
             environment->assignAt(distance->second, expr.m_Name, value);
@@ -335,7 +336,7 @@ public:
     }
 
     void visitLetStmt(Let& stmt) override {
-        // maybe check if already contains key with stmt.name.lexeme, if yes throw RuntimeError
+        // maybe check if already contains key with stmt.m_Name.lexeme, if yes throw RuntimeError
 
         std::any value;
         // If the variable has an initializer, evaluate the initializer.
@@ -401,14 +402,14 @@ public:
             environment->define("super", superclass);
         }
 
-        map<string, shared_ptr<LoxFunction>> methods;
+        map<string, shared_ptr<KarolaScriptFunction>> methods;
         for (auto method : stmt.methods) {
-            bool is_init = method->name.lexeme == "init";
+            bool is_init = method->m_Name.lexeme == "init";
             shared_ptr<LoxFunction> function(
                     new LoxFunction(method, environment, is_init)
             );
 
-            methods[method->name.lexeme] = function;
+            methods[method->m_Name.lexeme] = function;
         }
 
         auto klass = shared_ptr<LoxClass>(new LoxClass(stmt.name.lexeme, superclass.lox_class, methods)

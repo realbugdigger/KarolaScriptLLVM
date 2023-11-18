@@ -115,7 +115,7 @@ public:
         if (currentClass == CLASS_NONE) {
             lox::error(expr.m_Keyword.line, "Cannot use 'super' outside of a class.");
         } else if (currentClass != SUBCLASS) {
-            lox::error(expr.m_Keyword.line, "Cannot use 'super' in a class with no superclass.");
+            lox::error(expr.m_Keyword.line, "Cannot use 'super' in a class with no m_Superclass.");
         }
         resolveLocal(expr, expr.m_Keyword);
         return nullptr;
@@ -296,7 +296,7 @@ private:
 
         // Don't allow the same variable declaration more than once.
         if (scope.find(name.lexeme) != scope.end()) {
-            lox::error(name.line, "Variable with this name already declared in this scope.");
+            lox::error(name.line, "Variable with this m_Name already declared in this scope.");
         }
 
 
@@ -323,9 +323,9 @@ private:
         scopes.emplace_back(scope);
     }
 
-//    void resolveLocal(std::shared_ptr<Expr>& expr, const Token& name) {
+//    void resolveLocal(std::shared_ptr<Expr>& expr, const Token& m_Name) {
 //        for (int i = scopes.size() - 1; i >= 0; i--) {
-//            auto searched = scopes[i].find(name.lexeme);
+//            auto searched = scopes[i].find(m_Name.lexeme);
 //            if (searched != scopes[i].end()) {
 //                m_Interpreter.resolve(expr, scopes.size() - 1 - i);
 //                return;
