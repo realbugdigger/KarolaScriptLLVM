@@ -13,4 +13,5 @@ add_executable(KarolaScript src/main.cpp
         src/parser/Stmt.h
         src/interpreter/Interpreter.h
         src/interpreter/Environment.h
-        src/interpreter/RuntimeError.h)
+        src/interpreter/RuntimeError.h
+        src/interpreter/Resolver.h)

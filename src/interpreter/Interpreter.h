@@ -2,6 +2,7 @@
 
 #include <any>
 #include <iostream>
+#include <memory>
 
 #include "../parser/Stmt.h"
 #include "../parser/Expr.h"
@@ -41,7 +42,7 @@ public:
             for (auto& statement : statements) {
                 execute(statement);
             }
-        } catch (RuntimeError error) {
+        } catch (RuntimeError& error) {
             lox::runtimeError(error);
         }
     }
@@ -352,7 +353,7 @@ public:
                 std::any obj = evaluate(stmt.m_Condition);
                 execute(stmt.m_Body);
             }
-        }catch (BreakError e) {
+        }catch (BreakException& e) {
             // catching break carefully and exiting loop
         }
     }
@@ -364,7 +365,7 @@ public:
             } else if (stmt.m_ElseBranch != nullptr) {
                 execute(stmt.m_ElseBranch);
             }
-        } catch (BreakError e) {
+        } catch (BreakException& e) {
             // catching break carefully and exiting loop
         }
     }
@@ -396,7 +397,7 @@ public:
         environment->define(stmt.m_Name.lexeme, nullptr);
 
         if (stmt.m_Superclass != nullptr) {
-            environment = shared_ptr<Environment>(new Environment(environment));
+            environment = std::make_shared<Environment>(environment);
             environment->define("super", superclass);
         }
 
@@ -417,7 +418,7 @@ public:
             environment = environment->enclosing;
         }
 
-        environment->assign(stmt.name, Object::make_class_obj(klass));
+        environment->assign(stmt.m_Name, Object::make_class_obj(klass));
     }
 
     void executeBlock(std::vector<std::shared_ptr<Stmt>>& statements, std::shared_ptr<Environment> enclosing_env) {
@@ -523,5 +524,10 @@ private:
             return false;
         }
         return str.substr(str.length() - suffix.length()) == suffix;
+    }
+
+    void resolve(const std::shared_ptr<Expr>& expr, int depth) {
+        //locals[expr] = depth;
+        locals.try_emplace(*expr, depth);
     }
 };
