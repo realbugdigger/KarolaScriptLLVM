@@ -5,8 +5,36 @@
 
 #include "../parser/Stmt.h"
 #include "../parser/Expr.h"
+#include "../interpreter/Environment.h"
 
 class Interpreter : public StmtVisitor, public ExprVisitor<std::any> {
+private:
+    std::unique_ptr<Environment> globals = std::make_unique<Environment>();
+    Environment* const global_environment;
+    std::shared_ptr<Environment> environment;
+    std::unordered_map<const Expr*, size_t> locals;
+
+    // The EnvironmentGuard class is used to manage the interpreter's environment stack. It follows the
+    // RAII technique, which means that when an instance of the class is created, a copy of the current
+    // environment is stored, and the current environment is moved to the new one. If a runtime error is
+    // encountered and the interpreter needs to unwind the stack and return to the previous environment,
+    // the EnvironmentGuard class's destructor is called, which swaps the resources back to the previous
+    // environment.
+    class EnvironmentGuard
+    {
+        private:
+            Interpreter& interpreter;
+            std::shared_ptr<Environment> previous_env;
+        public:
+            EnvironmentGuard(Interpreter& interpreter, std::shared_ptr<Environment> enclosing_env)
+                : interpreter{interpreter}, previous_env{interpreter.environment} {
+                interpreter.environment = std::move(enclosing_env);
+            }
+
+            ~EnvironmentGuard() {
+                interpreter.environment = std::move(previous_env);
+            }
+    };
 public:
     void interpret(std::vector<std::shared_ptr<Stmt>>& statements) {
         try {
