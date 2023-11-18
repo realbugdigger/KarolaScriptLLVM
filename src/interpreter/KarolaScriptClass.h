@@ -22,7 +22,7 @@ public:
     KarolaScriptClass(std::string& name_, const std::shared_ptr<KarolaScriptClass>& superclass_, const std::unordered_map<std::string, std::shared_ptr<KarolaScriptFunction>>& methods_)
         : m_Name(std::move(name_)), m_Superclass(superclass_), m_Methods(methods_) {}
 
-    Object call(std::shared_ptr<Interpreter> interpreter, std::vector<Object> arguments) override {
+    std::shared_ptr<std::any> call(const std::shared_ptr<Interpreter>& interpreter, const std::vector<std::shared_ptr<std::any>>& arguments) override {
         auto instance = std::shared_ptr<LoxInstance>(new LoxInstance(*this));
         std::shared_ptr<KarolaScriptFunction> initializer = findMethod("init");
         if (initializer != nullptr) {
@@ -49,6 +49,6 @@ public:
         if (m_Superclass != nullptr) {
             return m_Superclass->findMethod(name);
         }
-        return 0;
+        return nullptr;
     }
 };

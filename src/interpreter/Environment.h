@@ -14,7 +14,7 @@ private:
 public:
     Environment() = default;
 
-    explicit Environment(std::shared_ptr<Environment> enclosing)
+    explicit Environment(std::shared_ptr<Environment>& enclosing)
             : enclosing{std::move(enclosing)} {
     }
 
@@ -23,15 +23,15 @@ public:
         values.try_emplace(identifier, std::make_shared<std::any>(value));
     }
 
-    void define(const std::string& identifier, const std::shared_ptr<std::any>& ptr_to_val) {
-        // Define a new identifier.
-        values.try_emplace(identifier, ptr_to_val);
-    }
+//    void define(const std::string& identifier, const std::shared_ptr<std::any>& ptr_to_val) {
+//        // Define a new identifier.
+//        values.try_emplace(identifier, ptr_to_val);
+//    }
 
-    std::shared_ptr<std::any> lookup(const Token& identifier)
-    {
+    // `lookup()` can be renamed to `get()`
+    std::shared_ptr<std::any> lookup(const Token& identifier) {
         // Check if the current environment contains the identifier.
-        if (values.contains(identifier.lexeme)) {
+        if (values.find(identifier.lexeme) != values.end()) {
             // If so, return the value associated with it.
             return values[identifier.lexeme];
         }
@@ -46,8 +46,7 @@ public:
     }
 
     void assign(const Token& identifier, const std::any& value) {
-        if (values.contains(identifier.lexeme))
-        {
+        if (values.find(identifier.lexeme) != values.end()) {
             *(values[identifier.lexeme]) = value;
             return;
         }
@@ -60,9 +59,9 @@ public:
         throw RuntimeError(identifier, "Undefined variable '" + identifier.lexeme + "'.");
     }
 
-    Environment* ancestor(size_t distance) {
+    Environment* ancestor(int distance) {
         auto environment = this;
-        for (size_t i = 0u; i < distance; ++i)
+        for (int i = 0; i < distance; ++i)
         {
             if (!environment->enclosing)
                 break;
@@ -73,11 +72,11 @@ public:
         return environment;
     }
 
-    std::shared_ptr<std::any> getAt(size_t distance, const std::string& identifier) {
+    std::shared_ptr<std::any> getAt(int distance, const std::string& identifier) {
         return ancestor(distance)->values[identifier];
     }
 
-    void assignAt(size_t distance, const Token& identifier, const std::any& value) {
+    void assignAt(int distance, const Token& identifier, const std::any& value) {
         *(ancestor(distance)->values[identifier.lexeme]) = value;
     }
 };
