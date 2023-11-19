@@ -237,7 +237,7 @@ class Variable : public Expr {
 public:
     Token m_VariableName;
 
-    explicit Variable(Token& name)
+    explicit Variable(const Token& name)
                 : m_VariableName(std::move(name)) {
     }
 

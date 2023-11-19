@@ -3,6 +3,7 @@
 #include "../lexer/Token.h"
 #include <stdexcept>
 #include <any>
+#include <memory>
 
 class RuntimeError : std::runtime_error {
 private:
@@ -25,13 +26,11 @@ public:
             : RuntimeError(token, "Cannot break outside of a loop."){};
 };
 
-class ReturnException : public RuntimeError
-{
+class ReturnException : public RuntimeError {
 public:
-    explicit ReturnException(std::any value) : RuntimeError(), value{std::move(value)} {};
+    std::shared_ptr<std::any> m_Value;
+public:
+    explicit ReturnException(std::shared_ptr<std::any> value) : RuntimeError(), m_Value{std::move(value)} {};
 
-    const std::any& getReturnValue() const { return value; }
-
-private:
-    std::any value;
+    //const std::any& getReturnValue() const { return m_Value; }
 };

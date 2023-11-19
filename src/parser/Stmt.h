@@ -46,7 +46,7 @@ class Block : public Stmt {
 public:
     std::vector<std::shared_ptr<Stmt>> m_Statements;
 
-    explicit Block(std::vector<std::shared_ptr<Stmt>>& statements)
+    explicit Block(const std::vector<std::shared_ptr<Stmt>>& statements)
             : m_Statements(std::move(statements)) {
     }
 
@@ -90,7 +90,7 @@ public:
     std::vector<Token> m_Params;
     std::vector<std::shared_ptr<Stmt>> m_Body;
 
-    Function(Token& name, std::vector<Token>& params, std::vector<std::shared_ptr<Stmt>>& body)
+    Function(Token& name, const std::vector<Token>& params, const std::vector<std::shared_ptr<Stmt>>& body)
                 : m_Name(std::move(name)), m_Params(std::move(params)), m_Body(std::move(body)) {
     }
 

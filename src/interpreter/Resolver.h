@@ -156,7 +156,7 @@ public:
 
         if (stmt.m_Value != nullptr) {
             if (currentFunction == INITIALIZER) {
-                lox::error(stmt.m_Keyword.line, "Cannot return a value from an initializer.");
+                lox::error(stmt.m_Keyword.line, "Cannot return a m_Value from an initializer.");
             }
             resolve(stmt.m_Value);
         }
@@ -300,7 +300,7 @@ private:
         }
 
 
-        // The value associated with a key in the scope map represents whether we have completed
+        // The m_Value associated with a key in the scope map represents whether we have completed
         // resolving the initializer for that variable.
         //scope.try_emplace(identifier.lexeme, false);
 
@@ -312,7 +312,7 @@ private:
     void define(const Token& name) {
         if (scopes.empty()) return;
 
-        // Indicates that the variable has been fully initialized by setting the value to true.
+        // Indicates that the variable has been fully initialized by setting the m_Value to true.
         //scopes.back()[identifier.lexeme] = true;
 
         // Get the innermost scope.

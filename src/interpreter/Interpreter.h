@@ -142,7 +142,7 @@ public:
 
     std::any visitGetExpr(Get& expr) override {
         std::any object = evaluate(expr.m_Object);
-        if (object.type() == typeid(KSInstance)) {
+        if (object.type() == typeid(KarolaScriptInstance)) {
             return (object.instance)->get(expr.m_Name);
         }
 
@@ -152,7 +152,7 @@ public:
     std::any visitAssignExpr(Assign& expr) override {
         std::any value = evaluate(expr.m_Value);
 
-        // environment->assign(expr->m_Name, value);
+        // environment->assign(expr->m_Name, m_Value);
         auto distance = locals.find(expr);
         if (distance != locals.end()) {
             environment->assignAt(distance->second, expr.m_Name, value);
@@ -376,7 +376,7 @@ public:
     }
 
     void visitFunctionStmt(Function& stmt) override {
-        std::shared_ptr<KSFunction> function(new KSFunction(stmt, environment, false));
+        std::shared_ptr<KarolaScriptFunction> function(new KarolaScriptFunction(stmt, environment, false));
         Object obj = Object::make_fun_obj(function);
         environment->define(stmt.m_Name.lexeme, obj);
     }
@@ -403,17 +403,14 @@ public:
         }
 
         map<string, shared_ptr<KarolaScriptFunction>> methods;
-        for (auto method : stmt.methods) {
+        for (auto method : stmt.m_Methods) {
             bool is_init = method->m_Name.lexeme == "init";
-            shared_ptr<LoxFunction> function(
-                    new LoxFunction(method, environment, is_init)
-            );
+            auto function = std::make_shared<KarolaScriptFunction>(method, environment, is_init);
 
             methods[method->m_Name.lexeme] = function;
         }
 
-        auto klass = shared_ptr<LoxClass>(new LoxClass(stmt.name.lexeme, superclass.lox_class, methods)
-        );
+        auto klass = std::make_shared<KarolaScriptClass>(stmt.m_Name.lexeme, superclass.lox_class, methods);
 
         if (superclass.type != Object::Object_nil) {
             environment = environment->enclosing;
@@ -431,7 +428,7 @@ public:
         }
     }
 
-private:
+public:
     std::any evaluate(std::shared_ptr<Expr>& expr) {
         return expr->accept(*this);
     }
@@ -442,17 +439,17 @@ private:
 
     // KarolaScript follows Ruby’s simple rule: `false` and `null` are falsey, and everything else is truthy
     bool isTruthy(const std::any& object) const {
-        // This case would indicate a null value.
+        // This case would indicate a null m_Value.
         if (!object.has_value()) {
             return false;
         }
 
-        // If the object is of type bool, return the cast value.
+        // If the object is of type bool, return the cast m_Value.
         if (object.type() == typeid(bool)) {
             return std::any_cast<bool>(object);
         }
 
-        // Object has value and is not a false boolean, Therefore it is considered truthy.
+        // Object has m_Value and is not a false boolean, Therefore it is considered truthy.
         return true;
     }
 

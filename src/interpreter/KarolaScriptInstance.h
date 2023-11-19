@@ -16,13 +16,19 @@ private:
     KarolaScriptClass klass;
     std::unordered_map<std::string, std::any> fields;
 public:
+    //KarolaScriptInstance() = default;
+
+    explicit KarolaScriptInstance(const KarolaScriptClass& klass_): klass(klass_) {}
+
     explicit KarolaScriptInstance(KarolaScriptClass& klass_): klass(std::move(klass_)) {}
 
-    std::string toString() {
+    explicit KarolaScriptInstance(KarolaScriptClass&& klass_): klass(std::move(klass_)) {}
+
+    virtual std::string toString() {
         return klass.m_Name + " instance";
     }
 
-    std::any get(const Token& name) {
+    virtual std::any get(const Token& name) {
         auto searched = fields.find(name.lexeme);
         if (searched != fields.end()) {
             return searched->second;

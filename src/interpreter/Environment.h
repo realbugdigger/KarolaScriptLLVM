@@ -8,7 +8,7 @@
 #include "RuntimeError.h"
 
 class Environment {
-private:
+public:
     std::shared_ptr<Environment> enclosing;
     std::unordered_map<std::string, std::shared_ptr<std::any>> values;
 public:
