@@ -6,43 +6,46 @@
 #include <memory>
 #include <any>
 #include <utility>
+#include <sstream>
 
 #include "../lexer/Token.h"
+#include "../util/Object.h"
 #include "RuntimeError.h"
 #include "KarolaScriptClass.h"
 
-class KarolaScriptInstance {
+class KarolaScriptInstance : public std::enable_shared_from_this<KarolaScriptInstance> {
 private:
-    KarolaScriptClass klass;
-    std::unordered_map<std::string, std::any> fields;
+    std::shared_ptr<KarolaScriptClass> m_Klass;
+    std::unordered_map<std::string, Object> fields;
 public:
-    //KarolaScriptInstance() = default;
+    explicit KarolaScriptInstance(std::shared_ptr<KarolaScriptClass> klass_) : m_Klass(std::move(klass_)) {}
 
-    explicit KarolaScriptInstance(const KarolaScriptClass& klass_): klass(klass_) {}
-
-    explicit KarolaScriptInstance(KarolaScriptClass& klass_): klass(std::move(klass_)) {}
-
-    explicit KarolaScriptInstance(KarolaScriptClass&& klass_): klass(std::move(klass_)) {}
+//    explicit KarolaScriptInstance(const std::shared_ptr<KarolaScriptClass>& klass_): m_Klass(klass_) {}
 
     virtual std::string toString() {
-        return klass.m_Name + " instance";
+        std::stringstream ss;
+        ss << "<Instance of class " << m_Klass->name() << " at " << this << ">";
+        return ss.str();
+//        return m_Klass.m_ClassName + " instance";
     }
 
-    virtual std::any get(const Token& name) {
-        auto searched = fields.find(name.lexeme);
+    virtual Object getProperty(const Token& identifier) {
+        auto searched = fields.find(identifier.lexeme);
         if (searched != fields.end()) {
             return searched->second;
         }
 
-        std::shared_ptr<KarolaScriptFunction> method = klass.findMethod(name.lexeme);
+        std::shared_ptr<KarolaScriptFunction> method = m_Klass->findMethod(shared_from_this(), identifier.lexeme);
         if (method != nullptr) {
-            return Object::make_fun_obj(method->bind(*this));
+            std::shared_ptr<KarolaScriptFunction> newFunction = method->bind(shared_from_this());
+            Object newFunctionObject(newFunction);
+            return newFunctionObject;
         }
 
-        throw RuntimeError(name, "Undefined property '" + name.lexeme + "'.");
+        throw RuntimeError(identifier, "Undefined property '" + identifier.lexeme + "'.");
     }
 
-    void set(const Token& name, const std::any& value) {
-        fields[name.lexeme] = std::move(value);
+    void setProperty(const Token& identifier, const Object& value) {
+        fields[identifier.lexeme] = value;
     }
 };

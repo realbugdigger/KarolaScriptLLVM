@@ -5,31 +5,39 @@
 #include <any>
 
 #include "../lexer/Token.h"
+#include "../util/Object.h"
 #include "RuntimeError.h"
 
 class Environment {
 public:
     std::shared_ptr<Environment> enclosing;
-    std::unordered_map<std::string, std::shared_ptr<std::any>> values;
+    std::unordered_map<std::string, Object> values;
 public:
     Environment() = default;
 
-    explicit Environment(std::shared_ptr<Environment>& enclosing)
-            : enclosing{std::move(enclosing)} {
+    explicit Environment(std::shared_ptr<Environment> enclosing)
+            : enclosing{std::move(enclosing)} {}
+
+    // Use the Token overload because it can then report errors using the token's line. Only use the string overload when there's no token.
+    void define(const Token& identifier, const Object& value) {
+        std::string key = identifier.lexeme;
+        if (values.find(key) != values.end()){
+            throw RuntimeError("Cannot redefine a variable. Variable '" + key + "' has already been defined", identifier.line);
+        }
+
+        values[key] = value;
     }
 
-    void define(const std::string& identifier, const std::any& value) {
-        // Define a new identifier.
-        values.try_emplace(identifier, std::make_shared<std::any>(value));
-    }
+    void define(const std::string &key, const Object& value) {
+        if (values.count(key) == 1){
+            throw RuntimeError("Cannot redefine a variable. Variable '" + key + "' has already been defined");
+        }
 
-//    void define(const std::string& identifier, const std::shared_ptr<std::any>& ptr_to_val) {
-//        // Define a new identifier.
-//        values.try_emplace(identifier, ptr_to_val);
-//    }
+        values[key] = value;
+    }
 
     // `lookup()` can be renamed to `get()`
-    std::shared_ptr<std::any> lookup(const Token& identifier) {
+    Object lookup(const Token& identifier) {
         // Check if the current environment contains the identifier.
         if (values.find(identifier.lexeme) != values.end()) {
             // If so, return the value associated with it.
@@ -45,9 +53,9 @@ public:
         throw RuntimeError(identifier, "Undefined variable '" + identifier.lexeme + "'.");
     }
 
-    void assign(const Token& identifier, const std::any& value) {
+    void assign(const Token& identifier, const Object& value) {
         if (values.find(identifier.lexeme) != values.end()) {
-            *(values[identifier.lexeme]) = value;
+            values[identifier.lexeme] = value;
             return;
         }
 
@@ -61,10 +69,9 @@ public:
 
     Environment* ancestor(int distance) {
         auto environment = this;
-        for (int i = 0; i < distance; ++i)
-        {
+        for (int i = 0; i < distance; ++i) {
             if (!environment->enclosing)
-                break;
+                break; // throw RuntimeError; ????????
 
             environment = environment->enclosing.get();
         }
@@ -72,11 +79,11 @@ public:
         return environment;
     }
 
-    std::shared_ptr<std::any> getAt(int distance, const std::string& identifier) {
+    Object getAt(int distance, const std::string& identifier) {
         return ancestor(distance)->values[identifier];
     }
 
-    void assignAt(int distance, const Token& identifier, const std::any& value) {
-        *(ancestor(distance)->values[identifier.lexeme]) = value;
+    void assignAt(int distance, const Token& identifier, const Object& value) {
+        ancestor(distance)->values[identifier.lexeme] = value;
     }
 };

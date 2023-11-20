@@ -260,18 +260,18 @@ public:
 
     std::any visitSuperExpr(Super& expr) override {
         int distance = locals[expr];
-        KSClass superclass = (KSClass) environment->getAt(distance, "super");
+        KarolaScriptClass superclass = (KarolaScriptClass) environment->getAt(distance, "super");
 
         // "this" is always one level nearer than "super"'s environment.
         KSInstance instance = environment->getAt(distance - 1, "this");
 
-        std::shared_ptr<KSFunction> method = superclass.ks_class->findMethod(expr.m_Method.lexeme);
+        std::shared_ptr<KarolaScriptFunction> method = superclass.ks_class->findMethod(expr.m_Method.lexeme);
 
         if (method == nullptr) {
             throw RuntimeError(expr.m_Method, "Undefined property '" + expr.m_Method.lexeme + "'.");
         }
 
-        std::shared_ptr<KSFunction> binded_method =  method->bind(instance.instance);
+        std::shared_ptr<KarolaScriptFunction> binded_method =  method->bind(instance.instance);
         return Object::make_fun_obj(binded_method);
     }
 
