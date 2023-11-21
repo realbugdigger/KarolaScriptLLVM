@@ -9,6 +9,12 @@ enum ObjType {
     OBJTYPE_NULL, OBJTYPE_BOOL, OBJTYPE_NUMBER, OBJTYPE_STRING, OBJTYPE_CALLABLE, OBJTYPE_CLASS, OBJTYPE_FUNCTION, OBJTYPE_INSTANCE
 };
 
+/* A shared ptr is used because resources such as functions, classes, and instances are created and stored in memory only once but can
+ * be shared with multiple users. For example, two variables can refer to the same function.
+ * */
+using SharedCallablePtr = std::shared_ptr<KarolaScriptCallable>;
+using SharedInstancePtr = std::shared_ptr<KarolaScriptInstance>;
+
 /* Object class is used to represent variables, instances, functions, classes, etc, essentially surrendering type safety
  * and having to depend on instanceof checks. I attempted to maintain some type safety with this class.
  * LoxObject is a wrapper that can hold literals, callables
@@ -19,8 +25,8 @@ private:
     double number = 0.0;
     bool boolean = false;
     std::string str;
-    std::shared_ptr<KarolaScriptCallable> callable;
-    std::shared_ptr<KarolaScriptInstance> instance;
+    SharedCallablePtr callable;
+    SharedInstancePtr instance;
     ObjType type = ObjType::OBJTYPE_NULL;
 
 public:
@@ -58,11 +64,11 @@ public:
 
     explicit Object(bool boolean) : type(ObjType::OBJTYPE_BOOL), boolean(boolean) {}
 
-    explicit Object(std::shared_ptr<KarolaScriptCallable> callable) : type(ObjType::OBJTYPE_CALLABLE), callable(std::move(callable)) {}
+    explicit Object(SharedCallablePtr callable) : type(ObjType::OBJTYPE_CALLABLE), callable(std::move(callable)) {}
 
     explicit Object(KarolaScriptCallable* ptr) = delete;
 
-    explicit Object(std::shared_ptr<KarolaScriptInstance> instance) : type(ObjType::OBJTYPE_INSTANCE), instance(std::move(instance)) {}
+    explicit Object(SharedInstancePtr instance) : type(ObjType::OBJTYPE_INSTANCE), instance(std::move(instance)) {}
 
     explicit Object(KarolaScriptInstance* ptr) = delete;
 
@@ -94,5 +100,40 @@ public:
 
     bool isInstance() const {
         return type == ObjType::OBJTYPE_INSTANCE;
+    }
+
+    double getNumber() const {
+        if (!isNumber()){
+            throw std::runtime_error("Object does not contain a number");
+        }
+        return number;
+    }
+
+    bool getBoolean() const {
+        if (!isBoolean()){
+            throw std::runtime_error("Object does not contain a boolean");
+        }
+        return boolean;
+    }
+
+    std::string getString() const {
+        if (!isString()){
+            throw std::runtime_error("Object does not contain a string");
+        }
+        return str;
+    }
+
+    SharedCallablePtr getCallable() const {
+        if (!isCallable()){
+            throw std::runtime_error("Object does not contain a callable");
+        }
+        return callable;
+    }
+
+    SharedInstancePtr getClassInstance() const {
+        if (!isInstance()){
+            throw std::runtime_error("Object does not contain a class instance");
+        }
+        return instance;
     }
 };

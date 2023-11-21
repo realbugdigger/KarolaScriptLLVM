@@ -70,7 +70,7 @@ public:
     }
 
     //Creates a NEW function that is a copy of the current function but with a different closure where "this" is binded to an instance;
-    std::shared_ptr<KarolaScriptFunction> bind(std::shared_ptr<KarolaScriptInstance> instance) {
+    std::shared_ptr<KarolaScriptFunction> bind(SharedInstancePtr instance) {
         std::shared_ptr<Environment> environment = std::make_shared<Environment>(m_Closure);
         Object instanceObj(std::move(instance));
         environment->define("this", instanceObj);

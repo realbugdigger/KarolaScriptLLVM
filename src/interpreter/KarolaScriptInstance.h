@@ -35,9 +35,11 @@ public:
             return searched->second;
         }
 
-        std::shared_ptr<KarolaScriptFunction> method = m_Klass->findMethod(shared_from_this(), identifier.lexeme);
-        if (method != nullptr) {
-            std::shared_ptr<KarolaScriptFunction> newFunction = method->bind(shared_from_this());
+        std::optional<Object> method = m_Klass->findMethod(identifier.lexeme);
+        if (method.has_value()) {
+            KarolaScriptFunction *function = dynamic_cast<KarolaScriptFunction*>(method.value().getCallable().get());
+            //Create a new function where the variable "this" is binded to this instance
+            SharedCallablePtr newFunction(function->bind(shared_from_this()));
             Object newFunctionObject(newFunction);
             return newFunctionObject;
         }
