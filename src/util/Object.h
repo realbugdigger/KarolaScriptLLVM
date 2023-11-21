@@ -1,13 +1,17 @@
 #pragma once
 
-#include "../interpreter/KarolaScriptInstance.h"
-#include "../interpreter/KarolaScriptFunction.h"
-#include "../interpreter/KarolaScriptCallable.h"
-
+#include <iosfwd>
+#include <memory>
+#include <string>
 
 enum ObjType {
     OBJTYPE_NULL, OBJTYPE_BOOL, OBJTYPE_NUMBER, OBJTYPE_STRING, OBJTYPE_CALLABLE, OBJTYPE_CLASS, OBJTYPE_FUNCTION, OBJTYPE_INSTANCE
 };
+
+class KarolaScriptCallable;
+class KarolaScriptInstance;
+
+struct Token;
 
 /* A shared ptr is used because resources such as functions, classes, and instances are created and stored in memory only once but can
  * be shared with multiple users. For example, two variables can refer to the same function.
@@ -30,110 +34,47 @@ private:
     ObjType type = ObjType::OBJTYPE_NULL;
 
 public:
-    explicit Object(const Token &token) {
-        switch (token.type) {
-            case TOKEN_NUMBER:
-                type = ObjType::OBJTYPE_NUMBER;
-                number = std::stod(token.lexeme);
-                break;
-            case TOKEN_TRUE:
-                type = ObjType::OBJTYPE_BOOL;
-                boolean = true;
-                break;
-            case TOKEN_FALSE:
-                type = ObjType::OBJTYPE_BOOL;
-                boolean = false;
-                break;
-            case TOKEN_STRING:
-                type = ObjType::OBJTYPE_STRING;
-                str = token.lexeme;
-                break;
-            case TOKEN_NULL:
-                type = ObjType::OBJTYPE_NULL;
-                break;
-            default:
-                throw std::runtime_error("Invalid token type when constructing LoxObject");
-        }
-    }
+    explicit Object(const Token &token);
 
-    explicit Object(double number) : type(ObjType::OBJTYPE_NUMBER), number(number) {}
+    explicit Object(double number);
 
-    explicit Object(const std::string &string) : type(ObjType::OBJTYPE_STRING), str(string) {}
+    explicit Object(const std::string &string);
 
-    explicit Object(const char* string) : Object(std::string(string)) {}
+    explicit Object(const char* string);
 
-    explicit Object(bool boolean) : type(ObjType::OBJTYPE_BOOL), boolean(boolean) {}
+    explicit Object(bool boolean);
 
-    explicit Object(SharedCallablePtr callable) : type(ObjType::OBJTYPE_CALLABLE), callable(std::move(callable)) {}
+    explicit Object(SharedCallablePtr callable);
 
     explicit Object(KarolaScriptCallable* ptr) = delete;
 
-    explicit Object(SharedInstancePtr instance) : type(ObjType::OBJTYPE_INSTANCE), instance(std::move(instance)) {}
+    explicit Object(SharedInstancePtr instance);
 
     explicit Object(KarolaScriptInstance* ptr) = delete;
 
-    static Object Null() {
-        return Object();
-    }
+    static Object Null();
 
-    Object() : type(ObjType::OBJTYPE_NULL) {} //Initializes the object as NULL
+    Object(); //Initializes the object as NULL
 
-    bool isNumber() const {
-        return type == ObjType::OBJTYPE_NUMBER;
-    }
+    bool isNumber() const;
 
-    bool isBoolean() const {
-        return type == ObjType::OBJTYPE_BOOL;
-    }
+    bool isBoolean() const;
 
-    bool isString() const {
-        return type == ObjType::OBJTYPE_STRING;
-    }
+    bool isString() const;
 
-    bool isNull() const {
-        return type == ObjType::OBJTYPE_NULL;
-    }
+    bool isNull() const;
 
-    bool isCallable() const {
-        return type == ObjType::OBJTYPE_CALLABLE;
-    }
+    bool isCallable() const;
 
-    bool isInstance() const {
-        return type == ObjType::OBJTYPE_INSTANCE;
-    }
+    bool isInstance() const;
 
-    double getNumber() const {
-        if (!isNumber()){
-            throw std::runtime_error("Object does not contain a number");
-        }
-        return number;
-    }
+    double getNumber() const;
 
-    bool getBoolean() const {
-        if (!isBoolean()){
-            throw std::runtime_error("Object does not contain a boolean");
-        }
-        return boolean;
-    }
+    bool getBoolean() const;
 
-    std::string getString() const {
-        if (!isString()){
-            throw std::runtime_error("Object does not contain a string");
-        }
-        return str;
-    }
+    std::string getString() const;
 
-    SharedCallablePtr getCallable() const {
-        if (!isCallable()){
-            throw std::runtime_error("Object does not contain a callable");
-        }
-        return callable;
-    }
+    SharedCallablePtr getCallable() const;
 
-    SharedInstancePtr getClassInstance() const {
-        if (!isInstance()){
-            throw std::runtime_error("Object does not contain a class instance");
-        }
-        return instance;
-    }
+    SharedInstancePtr getClassInstance() const;
 };

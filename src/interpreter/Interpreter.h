@@ -413,7 +413,7 @@ public:
         auto klass = std::make_shared<KarolaScriptClass>(stmt.m_Name.lexeme, superclass.lox_class, methods);
 
         if (superclass.type != Object::Object_nil) {
-            environment = environment->enclosing;
+            environment = environment->m_Enclosing;
         }
 
         environment->assign(stmt.m_Name, Object::make_class_obj(klass));
