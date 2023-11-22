@@ -1,20 +1,23 @@
 #pragma once
 
+#include <unordered_map>
+#include <vector>
 #include <any>
 #include <iostream>
 #include <memory>
 
-#include "../parser/Stmt.h"
-#include "../parser/Expr.h"
 #include "Environment.h"
-#include "KarolaScriptInstance.h"
+#include "../parser/Expr.h"
+#include "../parser/Stmt.h"
+#include "../util/Object.h"
 
-class Interpreter : public StmtVisitor, public ExprVisitor<std::any> {
+class Interpreter : public StmtVisitor, public ExprVisitor<Object> {
 private:
     std::unique_ptr<Environment> globals = std::make_unique<Environment>();
     Environment* const global_environment;
     std::shared_ptr<Environment> environment;
-    std::unordered_map<const Expr*, size_t> locals;
+    //Contains the number of "hops" between the current environment and the environment where the variable referenced by Expr* is stored
+    std::unordered_map<const Expr*, int> localsDistance;
 
     // The EnvironmentGuard class is used to manage the interpreter's environment stack. It follows the
     // RAII technique, which means that when an instance of the class is created, a copy of the current
@@ -38,29 +41,29 @@ private:
             }
     };
 public:
-    void interpret(std::vector<std::shared_ptr<Stmt>>& statements) {
-        try {
-            for (auto& statement : statements) {
-                execute(statement);
-            }
-        } catch (RuntimeError& error) {
-            lox::runtimeError(error);
-        }
-    }
+    /*This function unpacks every UniqueStmtPtr into a raw pointer and then executes it. This is because the Interpreter does not
+     * own the dynamically allocated statement objects, it only operates on them, so it should use raw pointers instead of a
+     * smart pointer to signal that it does not own and has no influence over the lifetime of the objects.
+     * */
+    void interpret(std::vector<UniqueStmtPtr>& statements);
 
-    std::any visitSetExpr(Set& expr) override {
-        std::any object = evaluate(expr.m_Object);
 
-        if (object.type() != typeid(KarolaScriptInstance)) {
+    // EXPRESSIONS
+
+    Object visitSetExpr(Set& expr) override {
+        Object object = evaluate(expr.m_Object.get());
+
+        if (!object.isInstance()) {
             throw RuntimeError(expr.m_Name, "Only instances have fields.");
         }
 
-        std::any value = evaluate(expr.m_Value);
-        KarolaScriptInstance->set(expr.m_Value, value);
+        Object value = evaluate(expr.m_Value.get());
+        object.getClassInstance()->get().setProperty(expr.m_Value, value);
+//        KarolaScriptInstance->set(expr.m_Value, value);
         return value;
     }
 
-    std::any visitLogicalExpr(Logical& expr) override {
+    Object visitLogicalExpr(Logical& expr) override {
         // Evaluate the left operand of the logical expression.
         auto left = evaluate(expr.m_Left);
 
@@ -81,15 +84,15 @@ public:
         return evaluate(expr.m_Right);
     }
 
-    std::any visitLiteralExpr(Literal& expr) override {
+    Object visitLiteralExpr(Literal& expr) override {
         return expr.m_Literal;
     }
 
-    std::any visitGroupingExpr(Grouping& expr) override {
-        return evaluate(expr.m_Expression);
+    Object visitGroupingExpr(Grouping& expr) override {
+        return evaluate(expr.m_Expression.get());
     }
 
-    std::any visitCallExpr(Call& expr) override {
+    Object visitCallExpr(Call& expr) override {
         // Evaluate the callee (the function or class being called).
         auto callee = evaluate(expr.m_Callee);
 
@@ -134,13 +137,13 @@ public:
         return function->call(*this, arguments);
     }
 
-    std::any visitAnonFunctionExpr(AnonFunction& expr) override {
+    Object visitAnonFunctionExpr(AnonFunction& expr) override {
 //        Stmt.Function stmt = new Stmt.Function(null, expr.params, expr.body);
 //        LoxFunction function = new LoxFunction(stmt, environment);
         return nullptr;
     }
 
-    std::any visitGetExpr(Get& expr) override {
+    Object visitGetExpr(Get& expr) override {
         std::any object = evaluate(expr.m_Object);
         if (object.type() == typeid(KarolaScriptInstance)) {
             return (object.instance)->get(expr.m_Name);
@@ -149,7 +152,7 @@ public:
         throw RuntimeError(expr.m_Name, "Only instances have properties.");
     }
 
-    std::any visitAssignExpr(Assign& expr) override {
+    Object visitAssignExpr(Assign& expr) override {
         std::any value = evaluate(expr.m_Value);
 
         // environment->assign(expr->m_Name, m_Value);
@@ -162,7 +165,7 @@ public:
         return value;
     }
 
-    std::any visitBinaryExpr(Binary& expr) override {
+    Object visitBinaryExpr(Binary& expr) override {
         // Evaluate the left-hand side and right-hand side operands of the binary expression
         auto left = evaluate(expr.m_Left);
         auto right = evaluate(expr.m_Right);
@@ -254,11 +257,11 @@ public:
         }
     }
 
-    std::any visitThisExpr(This& expr) override {
+    Object visitThisExpr(This& expr) override {
         return lookUpVariable(expr.m_Keyword, expr);
     }
 
-    std::any visitSuperExpr(Super& expr) override {
+    Object visitSuperExpr(Super& expr) override {
         int distance = locals[expr];
         KarolaScriptClass superclass = (KarolaScriptClass) environment->getAt(distance, "super");
 
@@ -275,7 +278,7 @@ public:
         return Object::make_fun_obj(binded_method);
     }
 
-    std::any visitUnaryExpr(Unary& expr) override {
+    Object visitUnaryExpr(Unary& expr) override {
         // Evaluate the right-hand side operand of the unary expression.
         auto right = evaluate(expr.m_Right);
 
@@ -302,11 +305,11 @@ public:
         }
     }
 
-    std::any visitVariableExpr(Variable& expr) override {
+    Object visitVariableExpr(Variable& expr) override {
         return lookUpVariable(expr.m_VariableName, expr);
     }
 
-    std::any visitTernaryExpr(Ternary& expr) override {
+    Object visitTernaryExpr(Ternary& expr) override {
         std::any right = evaluate(expr.m_FalseExpr);
         std::any left = evaluate(expr.m_TrueExpr);
         std::any truthyExpr = evaluate(expr.m_Expr);
@@ -317,14 +320,14 @@ public:
     }
 
     void visitExpressionStmt(Expression& stmt) override {
-        evaluate(stmt.m_Expression);
+        evaluate(stmt.m_Expression.get());
     }
 
     void visitReturnStmt(Return& stmt) override {
         std::any value;
         // If the return statement is not void, evaluate the expression.
         if (stmt.m_Value != nullptr) {
-            value = evaluate(stmt.m_Value);
+            value = evaluate(stmt.m_Value.get());
         }
 
         throw ReturnException(value);
@@ -341,7 +344,7 @@ public:
         std::any value;
         // If the variable has an initializer, evaluate the initializer.
         if (stmt.m_Initializer != nullptr) {
-            value = evaluate(stmt.m_Initializer);
+            value = evaluate(stmt.m_Initializer.get());
         }
 
         // Define the variable in the current environment with the given identifier and value
@@ -423,19 +426,14 @@ public:
         // Enter a new environment.
         EnvironmentGuard environment_guard{*this, std::move(enclosing_env)};
         for (auto& statement : statements) {
-            assert(statement != nullptr);
-            execute(statement);
+            execute(statement.get());
         }
     }
 
 public:
-    std::any evaluate(std::shared_ptr<Expr>& expr) {
-        return expr->accept(*this);
-    }
+    Object evaluate(Expr* expr);
 
-    void execute(std::shared_ptr<Stmt>& stmt) {
-        stmt->accept(*this);
-    }
+    void execute(Stmt* stmt);
 
     // KarolaScript follows Ruby’s simple rule: `false` and `null` are falsey, and everything else is truthy
     bool isTruthy(const std::any& object) const {

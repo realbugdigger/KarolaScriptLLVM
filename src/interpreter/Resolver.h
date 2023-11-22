@@ -9,7 +9,7 @@
 //#include "Environment.h"
 #include "Interpreter.h"
 
-class Resolver : public StmtVisitor, public ExprVisitor<std::any> {
+class Resolver : public StmtVisitor, public ExprVisitor<Object> {
 private:
     enum FunctionType {
         FUNCTION_NONE,
