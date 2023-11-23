@@ -30,6 +30,8 @@ public:
     }
 
     const Token& getToken() const { return token; }
+
+    const std::string getMessage() const { return message; }
 };
 
 class BreakException : public RuntimeError

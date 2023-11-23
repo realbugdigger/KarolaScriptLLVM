@@ -9,6 +9,7 @@
 
 #include "KarolaScriptClass.h"
 #include "RuntimeError.h"
+#include "../ErrorReporter.h"
 #include "KarolaScriptFunction.h"
 #include "KarolaScriptCallable.h"
 #include "../util/Utils.h"
@@ -26,7 +27,7 @@ void Interpreter::interpret(std::vector<UniqueStmtPtr>& statements) {
             execute(statement.get());
         }
     } catch (RuntimeError& error) {
-        lox::runtimeError(error);
+        ErrorReporter::runtimeError(error);
     }
 }
 

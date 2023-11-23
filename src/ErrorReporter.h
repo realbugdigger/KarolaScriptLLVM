@@ -1,6 +1,7 @@
 #include <iostream>
 
 #include "lexer/lexer.h"
+#include "interpreter/RuntimeError.h"
 
 //    In a full-featured language implementation, you will likely have multiple ways errors get displayed: on stderr, in an IDE’s error window, logged to a file, etc.
 //    You don’t want that code smeared all over your scanner and Parser.
@@ -33,6 +34,10 @@ public:
         } else {
             report(token.line, "", message);
         }
+    }
+
+    static void runtimeError(RuntimeError& error) {
+        fprintf(stderr, "[!!!] Runtime Error: \"%s\".\n", error.getMessage().c_str());
     }
 private:
     static void report(int line, const char* where, const char* message) {

@@ -3,6 +3,7 @@
 #include <iostream>
 
 #include "RuntimeError.h"
+#include "../ErrorReporter.h"
 #include "../lexer/Token.h"
 
 
@@ -35,16 +36,18 @@ void Resolver::resolveLocal(const Expr& expr, const Token &identifier) {
         return;
 
     // Look for a variable starting from the innermost scope.
+    int i = 0;
     for (auto scope = scopes.rbegin(); scope != scopes.rend(); ++scope)
     {
         // If variable is found, then we resolve it.
         if (scope->find(identifier.lexeme) != scope->end())
         {
 //                m_Interpreter.resolve(expr, scopes.size() - 1 - i);
-            distances[expr] = scopes.size() - i - 1; //number of hops when resolving variable // remove this line and keep next ????
+            distances[&expr] = scopes.size() - i - 1; //number of hops when resolving variable // remove this line and keep next ????
 //            m_Interpreter.resolve(expr, std::distance(scopes.rbegin(), scope));
             return;
         }
+        i++;
     }
     // ... If never found, we can assume that the variable is global.
 }
@@ -81,7 +84,7 @@ void Resolver::declare(const Token& name) {
 
     // Don't allow the same variable declaration more than once.
     if (scope.find(name.lexeme) != scope.end()) {
-        lox::error(name.line, "Variable with this m_Name already declared in this scope.");
+        ErrorReporter::error(name.line, "Variable with this name already declared in this scope.");
     }
 
 
@@ -174,7 +177,7 @@ Object Resolver::visitBinaryExpr(Binary& expr) {
 
 Object Resolver::visitThisExpr(This& expr) {
     if (currentClass == CLASS_NONE) {
-        lox::error(expr.m_Keyword.line, "Cannot use 'this' outside of a class.");
+        ErrorReporter::error(expr.m_Keyword.line, "Cannot use 'this' outside of a class.");
         return Object::Null();
     }
     resolveLocal(expr, expr.m_Keyword);
@@ -183,9 +186,9 @@ Object Resolver::visitThisExpr(This& expr) {
 
 Object Resolver::visitSuperExpr(Super& expr) {
     if (currentClass == CLASS_NONE) {
-        lox::error(expr.m_Keyword.line, "Cannot use 'super' outside of a class.");
+        ErrorReporter::error(expr.m_Keyword.line, "Cannot use 'super' outside of a class.");
     } else if (currentClass != SUBCLASS) {
-        lox::error(expr.m_Keyword.line, "Cannot use 'super' in a class with no superclass.");
+        ErrorReporter::error(expr.m_Keyword.line, "Cannot use 'super' in a class with no superclass.");
     }
     resolveLocal(expr, expr.m_Keyword);
     return Object::Null();
@@ -201,7 +204,7 @@ Object Resolver::visitVariableExpr(Variable& expr) {
         auto last = scopes.back();
         auto searched = last.find(expr.m_VariableName.lexeme);
         if (searched != last.end() && !searched->second) {
-            lox::error(expr.m_VariableName.line, "Cannot read local variable in its own initializer.");
+            ErrorReporter::error(expr.m_VariableName.line, "Cannot read local variable in its own initializer.");
         }
     }
     resolveLocal(expr, expr.m_VariableName);
@@ -223,12 +226,12 @@ void Resolver::visitExpressionStmt(Expression& stmt) {
 
 void Resolver::visitReturnStmt(Return& stmt) {
     if (currentFunction == FUNCTION_NONE) {
-        lox::error(stmt.m_Keyword.line, "Cannot return from top-level code.");
+        ErrorReporter::error(stmt.m_Keyword.line, "Cannot return from top-level code.");
     }
 
     if (stmt.m_Value.has_value()) {
         if (currentFunction == INITIALIZER) {
-            lox::error(stmt.m_Keyword.line, "Cannot return a value from an initializer.");
+            ErrorReporter::error(stmt.m_Keyword.line, "Cannot return a value from an initializer.");
         }
         resolve(stmt.m_Value->get());
     }
@@ -237,7 +240,7 @@ void Resolver::visitReturnStmt(Return& stmt) {
 void Resolver::visitBreakStmt(Break& stmt) {
     // If not in a nested loop, add a new error.
     if (loopNestingLevel == 0) {
-        Error::addError(stmt.m_Keyword, "Can't break outside of a loop.");
+        ErrorReporter::error(stmt.m_Keyword, "Can't break outside of a loop.");
     }
     //throw BreakException(stmt.m_Keyword);
     //        throw BreakError(stmt.m_Keyword);
@@ -291,7 +294,7 @@ void Resolver::visitClazzStmt(Class& stmt) {
 
     if (stmt.m_Superclass.has_value() &&
         stmt.m_Name.lexeme == stmt.m_Superclass->get()->m_VariableName.lexeme) {
-        lox::error(stmt.m_Superclass->get()->m_VariableName.line, "A class cannot inherit from itself.");
+        ErrorReporter::error(stmt.m_Superclass->get()->m_VariableName.line, "A class cannot inherit from itself.");
     }
 
     if (stmt.m_Superclass.has_value()) {
