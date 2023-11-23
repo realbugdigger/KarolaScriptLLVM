@@ -25,4 +25,7 @@ add_executable(KarolaScript src/main.cpp
         src/interpreter/Environment.cpp
         src/interpreter/Interpreter.cpp
         src/util/common.h
+        src/interpreter/Resolver.cpp
+        src/util/Utils.h
+        src/util/Utils.cpp
 )

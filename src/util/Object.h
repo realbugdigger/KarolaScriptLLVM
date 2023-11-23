@@ -31,9 +31,9 @@ private:
     std::string str;
     SharedCallablePtr callable;
     SharedInstancePtr instance;
+public:
     ObjType type = ObjType::OBJTYPE_NULL;
 
-public:
     explicit Object(const Token &token);
 
     explicit Object(double number);
