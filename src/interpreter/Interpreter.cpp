@@ -12,6 +12,13 @@
 #include "KarolaScriptFunction.h"
 #include "KarolaScriptCallable.h"
 #include "../util/Utils.h"
+#include "ks_stdlib/StdLibFunctions.h"
+
+Interpreter::Interpreter() {
+    globals = std::make_unique<Environment>();
+    environment = globals;
+    loadNativeFunctions();
+}
 
 void Interpreter::interpret(std::vector<UniqueStmtPtr>& statements) {
     try {
@@ -133,6 +140,23 @@ std::string Interpreter::stringify(const Object& object) {
     }
 }
 
+void Interpreter::loadNativeFunctions() {
+    SharedCallablePtr clock = std::make_shared<stdlibFunctions::Clock>();
+    SharedCallablePtr sleep = std::make_shared<stdlibFunctions::Sleep>();
+
+    std::vector<Object> functions = {Object(clock), Object(sleep)};
+    for (const auto &function : functions) {
+        globals->define(function.getCallable()->name(), function);
+    }
+}
+
+Object Interpreter::lookupVariable(const Token& identifier, const Expr* variableExpr) {
+    if (localsDistances.find(variableExpr) != localsDistances.end()){
+        return environment->getAt(localsDistances[variableExpr], identifier.lexeme);
+    }
+    return globals->lookup(identifier);
+}
+
 // EXPRESSIONS
 
 Object Interpreter::visitSetExpr(Set& expr) {
@@ -144,7 +168,6 @@ Object Interpreter::visitSetExpr(Set& expr) {
 
     Object value = evaluate(expr.m_Value.get());
     object.getClassInstance()->setProperty(expr.m_Name, value);
-    //        KarolaScriptInstance->set(expr.m_Value, value);
     return value;
 }
 
@@ -231,13 +254,13 @@ Object Interpreter::visitCallExpr(Call& callExpr) {
     }
 
     if (!callee.isCallable()){
-        throw LoxRuntimeError("Expression is not callable", callExpr.m_Paren.line);
+        throw RuntimeError("Expression is not callable", callExpr.m_Paren.line);
     }
     KarolaScriptCallable* callable = callee.getCallable().get();
     if (arguments.size() != callable->arity()){
         std::stringstream ss;
         ss  << callable->name() << " expected " << callable->arity() << " argument(s) but instead got " << arguments.size();
-        throw LoxRuntimeError(ss.str(), callExpr.m_Paren.line);
+        throw RuntimeError(ss.str(), callExpr.m_Paren.line);
     }
 
     return callable->call(*this, arguments);
@@ -312,10 +335,10 @@ Object Interpreter::visitBinaryExpr(Binary& expr) {
             return Object(left.getBoolean() <= right.getBoolean());
 
         case TOKEN_EQUAL_EQUAL:
-            return isEqual(left, right);
+            return Object(isEqual(left, right));
 
         case TOKEN_BANG_EQUAL:
-            return !isEqual(left, right);
+            return Object(!isEqual(left, right));
 
         case TOKEN_PLUS:
             if (left.isString() && right.isString()) {
@@ -347,7 +370,7 @@ Object Interpreter::visitBinaryExpr(Binary& expr) {
 }
 
 Object Interpreter::visitThisExpr(This& expr) {
-    return lookUpVariable(expr.m_Keyword, expr);
+    return lookupVariable(expr.m_Keyword, &expr);
 }
 
 Object Interpreter::visitSuperExpr(Super& expr) {
@@ -361,7 +384,7 @@ Object Interpreter::visitSuperExpr(Super& expr) {
 
     std::optional<Object> methodObj = superclass->findMethod(expr.m_Method.lexeme);
     if (!methodObj.has_value()){
-        throw LoxRuntimeError("Undefined property '" + expr.m_Method.lexeme + "'.", expr.m_Keyword.line);
+        throw RuntimeError("Undefined property '" + expr.m_Method.lexeme + "'.", expr.m_Keyword.line);
     }
     KarolaScriptFunction* method = dynamic_cast<KarolaScriptFunction*>(methodObj.value().getCallable().get());
 
@@ -387,7 +410,7 @@ Object Interpreter::visitUnaryExpr(Unary& expr) {
 
         case TokenType::TOKEN_BANG:
             // Return the negation of the truthiness of the right-hand side operand.
-            return !isTruthy(right);
+            return Object(!isTruthy(right));
 
         default:
             return Object::Null(); // Unreachable.
@@ -395,7 +418,7 @@ Object Interpreter::visitUnaryExpr(Unary& expr) {
 }
 
 Object Interpreter::visitVariableExpr(Variable& expr) {
-    return lookUpVariable(expr.m_VariableName, expr);
+    return lookupVariable(expr.m_VariableName, &expr);
 }
 
 Object Interpreter::visitTernaryExpr(Ternary& expr) {

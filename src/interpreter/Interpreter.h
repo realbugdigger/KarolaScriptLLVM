@@ -12,10 +12,9 @@
 
 class Interpreter : public StmtVisitor, public ExprVisitor<Object> {
 private:
-    std::unique_ptr<Environment> globals = std::make_unique<Environment>();
-    Environment* const global_environment;
+    std::shared_ptr<Environment> globals;
     std::shared_ptr<Environment> environment;
-    //Contains the number of "hops" between the current environment and the environment where the variable referenced by Expr* is stored
+    // Contains the number of "hops" between the current environment and the environment where the variable referenced by Expr* is stored
     std::unordered_map<const Expr*, int> localsDistances;
 
     // The EnvironmentGuard class is used to manage the interpreter's environment stack. It follows the
@@ -40,6 +39,8 @@ private:
             }
     };
 public:
+    Interpreter();
+
     /*This function unpacks every UniqueStmtPtr into a raw pointer and then executes it. This is because the Interpreter does not
      * own the dynamically allocated statement objects, it only operates on them, so it should use raw pointers instead of a
      * smart pointer to signal that it does not own and has no influence over the lifetime of the objects.
@@ -90,8 +91,7 @@ public:
 
     std::string stringify(const Object& object);
 
-    void resolve(const std::shared_ptr<Expr>& expr, int depth) {
-        //locals[expr] = depth;
-        locals.try_emplace(*expr, depth);
-    }
+    Object lookupVariable(const Token& identifier, const Expr* variableExpr);
+
+    void loadNativeFunctions();
 };
