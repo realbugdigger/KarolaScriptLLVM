@@ -78,7 +78,7 @@ public:
 
     void execute(Stmt* stmt);
 
-    void executeBlock(std::vector<UniqueStmtPtr>& statements, std::shared_ptr<Environment> enclosing_env);
+    void executeBlock(const std::vector<UniqueStmtPtr>& statements, std::shared_ptr<Environment> enclosing_env);
 
     // KarolaScript follows Ruby’s simple rule: `false` and `null` are falsey, and everything else is truthy
     bool isTruthy(const Object& object) const;

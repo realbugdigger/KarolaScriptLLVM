@@ -11,6 +11,7 @@
 #include "../lexer/Token.h"
 //#include "typedefs.h"
 #include "KarolaScriptClass.h"
+#include "RuntimeError.h"
 
 KarolaScriptFunction::KarolaScriptFunction(const Function* declaration_,
                                            std::shared_ptr<Environment> closure_,

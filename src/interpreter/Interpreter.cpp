@@ -39,7 +39,7 @@ void Interpreter::execute(Stmt* stmt) {
     stmt->accept(*this);
 }
 
-void Interpreter::executeBlock(std::vector<UniqueStmtPtr>& statements, std::shared_ptr<Environment> enclosing_env) {
+void Interpreter::executeBlock(const std::vector<UniqueStmtPtr>& statements, std::shared_ptr<Environment> enclosing_env) {
     // Enter a new environment.
     EnvironmentGuard environment_guard{*this, std::move(enclosing_env)};
     for (auto& statement : statements) {
