@@ -150,7 +150,7 @@ static TokenType identifierType() {
         case 'i': return checkKeyword(1, 1, "f", TOKEN_IF);
         case 'n': return checkKeyword(1, 2, "ull", TOKEN_NULL);
         case 'o': return checkKeyword(1, 1, "r", TOKEN_OR);
-        case 'k': return checkKeyword(1, 4, "onsole", TOKEN_KONSOLE);
+        case 'k': return checkKeyword(1, 6, "onsole", TOKEN_KONSOLE);
         case 'r': return checkKeyword(1, 5, "eturn", TOKEN_RETURN);
         case 's': return checkKeyword(1, 4, "uper", TOKEN_SUPER);
         case 'v': return checkKeyword(1, 2, "ar", TOKEN_LET);

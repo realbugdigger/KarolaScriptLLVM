@@ -575,8 +575,8 @@ private:
 public:
     explicit Parser(const std::vector<Token> &tokens) : tokens(tokens) {}
 
-    std::vector<std::shared_ptr<Stmt>> parse() {
-        std::vector<std::shared_ptr<Stmt>> statements;
+    std::vector<UniqueStmtPtr> parse() {
+        std::vector<UniqueStmtPtr> statements;
         while (!isAtEnd()) {
             statements.push_back(declaration());
         }
