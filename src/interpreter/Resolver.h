@@ -26,21 +26,13 @@ private:
     ClassType currentClass = CLASS_NONE;
     FunctionType currentFunction = FUNCTION_NONE;
 
-//    Interpreter& m_Interpreter;
-
     std::unordered_map<const Expr*, int> distances;
 
     int loopNestingLevel = 0;
 
-    std::stack<FunctionType> func_stack;
-
     std::vector<std::unordered_map<std::string, bool>> scopes;
     std::vector<std::unordered_map<std::string, bool>> usages;
 public:
-//    explicit Resolver(Interpreter& interpreter) : m_Interpreter{interpreter} {
-//        func_stack.push(FunctionType::FUNCTION_NONE);
-//    }
-
     void resolve(const std::vector<UniqueStmtPtr> &statements);
     void resolve(Stmt* stmt);
     void resolve(Expr* expr);

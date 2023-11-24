@@ -8,6 +8,9 @@
 #include "../lexer/Token.h"
 #include "Expr.h"
 #include "Stmt.h"
+#include "../ErrorReporter.h"
+
+bool hadParseError = false;
 
 class Parser {
 private:
@@ -53,12 +56,9 @@ private:
     // TODO Either throw an error(), with return type being ParseError, or in method use ErrorReporter for reporting parsing errors ----> find usages and fix it !!!!!!
     // Maybe call error() to just report the error and keep parsing, but throw it when parser need's to synchronize
     // use some flag like `hadError` ???????
-    std::runtime_error error(const Token& token, const std::string& message) {
-        if (token.type == TOKEN_EOF) {
-            return std::runtime_error(std::to_string(token.line) + " at end" + message);
-        } else {
-            return std::runtime_error(std::to_string(token.line) + " at '" + token.start + "'" + message);
-        }
+    ParseError error(const Token& token, const std::string& message) {
+        ErrorReporter::error(token, message.c_str());
+        return ParseError();
     }
 
     void synchronize() { //synchronizes the parser to the next statement when it finds an error
@@ -117,7 +117,8 @@ private:
                 return std::make_unique<Set>(std::move(get->m_Object), get->m_Name, std::move(value));
             }
 
-            throw error(equals, "Invalid assignment target.");
+//            throw error(equals, "Invalid assignment target.");
+            error(equals, "Invalid assignment target.");
         }
 
         // if you don’t hit an `=`, report an error if the left-hand side isn’t a valid expression.
@@ -233,7 +234,7 @@ private:
         if (match({TOKEN_BANG_EQUAL, TOKEN_EQUAL_EQUAL, TOKEN_GREATER,
                    TOKEN_GREATER_EQUAL, TOKEN_LESS, TOKEN_LESS_EQUAL,
                    TOKEN_MINUS, TOKEN_PLUS, TOKEN_SLASH, TOKEN_STAR})) {         //binaryOperator
-            throw error(previous(), "Binary operator without left-hand operand.");
+            error(previous(), "Binary operator without left-hand operand.");
             expression();                   // Discard a right-hand operand
         }
 
@@ -567,6 +568,9 @@ private:
         }
         catch (ParseError&)
         {
+            //Report the exception but don't let it bubble up and stop the program. Instead, synchronize the parser and keep parsing.
+//            std::cout << error.what() << "\n";
+            hadParseError = true;
             synchronize();
             return nullptr;
         }

@@ -15,8 +15,11 @@ static void run(const char* program) {
     std::vector<Token> tokenList = scanTokens();
     auto* parser = new Parser(tokenList);
     std::vector<UniqueStmtPtr> statements = parser->parse();
-    Resolver resolver;
 
+    if (hadParseError)
+        exit(65);
+
+    Resolver resolver;
     resolver.resolve(statements);
 
     try {
