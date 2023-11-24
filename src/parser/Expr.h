@@ -1,14 +1,14 @@
 #pragma once
 
 #include <memory>
-#include <utility>
 #include <vector>
-#include <any>
+#include <utility>
 
 #include "../lexer/Token.h"
-//#include "Stmt.h"
+#include "../util/Object.h"
+#include "../util/common.h"
 
-class Stmt;
+//class Stmt;
 
 class Assign;
 class Binary;
@@ -29,68 +29,68 @@ template<typename R>
 class ExprVisitor {
 public:
     virtual ~ExprVisitor() = default;
-    virtual R visitAssignExpr(Assign expr) = 0;
-    virtual R visitBinaryExpr(Binary expr) = 0;
-    virtual R visitCallExpr(Call expr) = 0;
-    virtual R visitAnonFunctionExpr(AnonFunction expr) = 0;
-    virtual R visitGetExpr(Get expr) = 0;
-    virtual R visitGroupingExpr(Grouping expr) = 0;
-    virtual R visitLiteralExpr(Literal expr) = 0;
-    virtual R visitLogicalExpr(Logical expr) = 0;
-    virtual R visitSetExpr(Set expr) = 0;
-    virtual R visitSuperExpr(Super expr) = 0;
-    virtual R visitThisExpr(This expr) = 0;
-    virtual R visitUnaryExpr(Unary expr) = 0;
-    virtual R visitTernaryExpr(Ternary expr) = 0;
-    virtual R visitVariableExpr(Variable expr) = 0;
+    virtual R visitAssignExpr(Assign& expr) = 0;
+    virtual R visitBinaryExpr(Binary& expr) = 0;
+    virtual R visitCallExpr(Call& expr) = 0;
+    virtual R visitAnonFunctionExpr(AnonFunction& expr) = 0; //
+    virtual R visitGetExpr(Get& expr) = 0;
+    virtual R visitGroupingExpr(Grouping& expr) = 0;
+    virtual R visitLiteralExpr(Literal& expr) = 0;
+    virtual R visitLogicalExpr(Logical& expr) = 0;
+    virtual R visitSetExpr(Set& expr) = 0;
+    virtual R visitSuperExpr(Super& expr) = 0;
+    virtual R visitThisExpr(This& expr) = 0;
+    virtual R visitUnaryExpr(Unary& expr) = 0;
+    virtual R visitTernaryExpr(Ternary& expr) = 0;
+    virtual R visitVariableExpr(Variable& expr) = 0;
 };
 
 class Expr {
 public:
     virtual ~Expr() = default;
-    virtual std::any accept(ExprVisitor<std::any>& visitor) = 0;
+    virtual Object accept(ExprVisitor<Object>& visitor) = 0;
 };
 
 class Assign : public Expr {
 public:
     Token m_Name;
-    std::shared_ptr<Expr> m_Value;
+    UniqueExprPtr m_Value;
 
-    Assign(Token& name, std::shared_ptr<Expr>& value)
-            : m_Name(std::move(name)), m_Value(std::move(value)) {
+    Assign(const Token& name, UniqueExprPtr value)
+            : m_Name(name), m_Value(std::move(value)) {
     }
 
-    std::any accept(ExprVisitor<std::any>& visitor) override {
+    Object accept(ExprVisitor<Object>& visitor) override {
         return visitor.visitAssignExpr(*this);
     }
 };
 
 class Binary : public Expr {
 public:
-    std::shared_ptr<Expr> m_Left;
+    UniqueExprPtr m_Left;
     Token m_Operator;
-    std::shared_ptr<Expr> m_Right;
+    UniqueExprPtr m_Right;
 
-    Binary(std::shared_ptr<Expr>& left, Token& operator_, std::shared_ptr<Expr>& right)
-            : m_Left(std::move(left)), m_Operator(std::move(operator_)), m_Right(std::move(right)) {
+    Binary(UniqueExprPtr left, const Token& operator_, UniqueExprPtr right)
+            : m_Left(std::move(left)), m_Operator(operator_), m_Right(std::move(right)) {
     }
 
-    std::any accept(ExprVisitor<std::any>& visitor) override {
+    Object accept(ExprVisitor<Object>& visitor) override {
         return visitor.visitBinaryExpr(*this);
     }
 };
 
 class Call : public Expr {
 public:
-    std::shared_ptr<Expr> m_Callee;
+    UniqueExprPtr m_Callee;
     Token m_Paren;
-    std::vector<std::shared_ptr<Expr>> m_Arguments;
+    std::vector<UniqueExprPtr> m_Arguments;
 
-    Call(std::shared_ptr<Expr>& callee, Token& paren, std::vector<std::shared_ptr<Expr>>& arguments)
-            : m_Callee(std::move(callee)), m_Paren(std::move(paren)), m_Arguments(std::move(arguments)) {
+    Call(UniqueExprPtr callee, const Token& paren, std::vector<UniqueExprPtr> arguments)
+            : m_Callee(std::move(callee)), m_Paren(paren), m_Arguments(std::move(arguments)) {
     }
 
-    std::any accept(ExprVisitor<std::any>& visitor) override {
+    Object accept(ExprVisitor<Object>& visitor) override {
         return visitor.visitCallExpr(*this);
     }
 };
@@ -98,82 +98,86 @@ public:
 class AnonFunction : public Expr {
 public:
     std::vector<Token> m_Params;
-    std::vector<std::shared_ptr<Stmt>> m_Body;
+    std::vector<UniqueStmtPtr> m_Body;
 
-    AnonFunction(std::vector<Token>& params, std::vector<std::shared_ptr<Stmt>>& body)
-            : m_Params(std::move(params)), m_Body(std::move(body)) {
-    }
+    AnonFunction(std::vector<Token> params, std::vector<UniqueStmtPtr> body)
+            : m_Params(std::move(params)), m_Body(std::move(body)) {}
 
-    std::any accept(ExprVisitor<std::any>& visitor) override {
+    Object accept(ExprVisitor<Object>& visitor) override {
         return visitor.visitAnonFunctionExpr(*this);
     }
 };
 
 class Get : public Expr {
 public:
+    /*VariableExpr that refers to the object (not the field!) that is being accessed. For example if the parsed code were
+     * 'obj.a' then this variable would hold a pointer to 'obj' */
+    UniqueExprPtr m_Object;
+    /*Token of the identifier of the field being accessed. If the parsed code were 'obj.a' then this variable would contain
+     * the token corresponding to 'a' */
     Token m_Name;
-    std::shared_ptr<Expr> m_Object;
 
-    Get(Token& name, std::shared_ptr<Expr>& object)
-            : m_Name(std::move(name)), m_Object(std::move(object)) {
-    }
+    Get(const Token& name, UniqueExprPtr object)
+            : m_Name(name), m_Object(std::move(object)) {}
 
-    std::any accept(ExprVisitor<std::any>& visitor) override {
+    Object accept(ExprVisitor<Object>& visitor) override {
         return visitor.visitGetExpr(*this);
     }
 };
 
 class Grouping : public Expr {
 public:
-    std::shared_ptr<Expr> m_Expression;
+    UniqueExprPtr m_Expression;
 
-    Grouping(std::shared_ptr<Expr>& expression)
-                : m_Expression(std::move(expression)) {
-    }
+    explicit Grouping(UniqueExprPtr expression)
+                : m_Expression(std::move(expression)) {}
 
-    std::any accept(ExprVisitor<std::any>& visitor) override {
+    Object accept(ExprVisitor<Object>& visitor) override {
         return visitor.visitGroupingExpr(*this);
     }
 };
 
 class Literal : public Expr {
 public:
-    std::any m_Literal;
+    Object m_Literal;
 
-    explicit Literal(std::any literal) : m_Literal{std::move(literal)} {
-    }
+    explicit Literal(const Object& literal) : m_Literal(literal) {}
 
-    std::any accept(ExprVisitor<std::any>& visitor) override {
+    Object accept(ExprVisitor<Object>& visitor) override {
         return visitor.visitLiteralExpr(*this);
     }
 };
 
 class Logical : public Expr {
 public:
-    std::shared_ptr<Expr> m_Left;
+    UniqueExprPtr m_Left;
     Token m_Operator;
-    std::shared_ptr<Expr> m_Right;
+    UniqueExprPtr m_Right;
 
-    Logical(std::shared_ptr<Expr>& left, Token& operator_, std::shared_ptr<Expr>& right)
-                : m_Left(std::move(left)), m_Operator(std::move(operator_)), m_Right(std::move(right)) {
+    Logical(UniqueExprPtr left, const Token& operator_, UniqueExprPtr right)
+                : m_Left(std::move(left)), m_Operator(operator_), m_Right(std::move(right)) {
     }
 
-    std::any accept(ExprVisitor<std::any>& visitor) override {
+    Object accept(ExprVisitor<Object>& visitor) override {
         return visitor.visitLogicalExpr(*this);
     }
 };
 
 class Set : public Expr {
 public:
-    std::shared_ptr<Expr> m_Object;
+    /*VariableExpr that refers to the object (not the field!) that is being accessed. For example if the parsed code were
+     * 'obj.a' then this variable would hold a pointer to 'obj' */
+    UniqueExprPtr m_Object;
+    /*Token of the identifier of the field being accessed. If the parsed code were 'obj.a' then this variable would contain
+     * the token corresponding to 'a' */
     Token m_Name;
-    std::shared_ptr<Expr> m_Value;
+    UniqueExprPtr m_Value;
 
-    Set(std::shared_ptr<Expr>& object, Token& name, std::shared_ptr<Expr>& value)
-            : m_Object(std::move(object)), m_Name(std::move(name)), m_Value(std::move(value)) {
+    Set(UniqueExprPtr object, const Token& name, UniqueExprPtr value)
+            : m_Object(std::move(object)), m_Name(name), m_Value(std::move(value)) {
     }
 
-    std::any accept(ExprVisitor<std::any>& visitor) override {
+    Object accept(ExprVisitor<Object>& visitor) override {
         return visitor.visitSetExpr(*this);
     }
 };
@@ -183,11 +187,11 @@ public:
     Token m_Keyword;
     Token m_Method;
 
-    Super(Token& keyword, Token& method)
-            : m_Keyword(std::move(keyword)), m_Method(std::move(method)) {
+    Super(const Token& keyword, const Token& method)
+            : m_Keyword(keyword), m_Method(method) {
     }
 
-    std::any accept(ExprVisitor<std::any>& visitor) override {
+    Object accept(ExprVisitor<Object>& visitor) override {
         return visitor.visitSuperExpr(*this);
     }
 };
@@ -196,10 +200,10 @@ class This : public Expr {
 public:
     Token m_Keyword;
 
-    This(const Token& keyword) : m_Keyword(std::move(keyword)) {
+    explicit This(const Token& keyword) : m_Keyword(keyword) {
     }
 
-    std::any accept(ExprVisitor<std::any>& visitor) override {
+    Object accept(ExprVisitor<Object>& visitor) override {
         return visitor.visitThisExpr(*this);
     }
 };
@@ -207,28 +211,28 @@ public:
 class Unary : public Expr {
 public:
     Token m_Operator;
-    std::shared_ptr<Expr> m_Right;
+    UniqueExprPtr m_Right;
 
-    Unary(Token& operator_, std::shared_ptr<Expr>& right)
-            : m_Operator(operator_), m_Right(right) {
+    Unary(const Token& operator_, UniqueExprPtr right)
+            : m_Operator(operator_), m_Right(std::move(right)) {
     }
 
-    std::any accept(ExprVisitor<std::any>& visitor) override {
+    Object accept(ExprVisitor<Object>& visitor) override {
         return visitor.visitUnaryExpr(*this);
     }
 };
 
 class Ternary : public Expr {
 public:
-    std::shared_ptr<Expr> m_Expr;
-    std::shared_ptr<Expr> m_TrueExpr;
-    std::shared_ptr<Expr> m_FalseExpr;
+    UniqueExprPtr m_Expr;
+    UniqueExprPtr m_TrueExpr;
+    UniqueExprPtr m_FalseExpr;
 
-    Ternary(std::shared_ptr<Expr>& expr, std::shared_ptr<Expr>& trueExpr, std::shared_ptr<Expr>& falseExpr)
+    Ternary(UniqueExprPtr expr, UniqueExprPtr trueExpr, UniqueExprPtr falseExpr)
                 : m_Expr(std::move(expr)), m_TrueExpr(std::move(trueExpr)), m_FalseExpr(std::move(falseExpr)) {
     }
 
-    std::any accept(ExprVisitor<std::any>& visitor) override {
+    Object accept(ExprVisitor<Object>& visitor) override {
         return visitor.visitTernaryExpr(*this);
     }
 };
@@ -237,11 +241,11 @@ class Variable : public Expr {
 public:
     Token m_VariableName;
 
-    Variable(const Token& name)
+    explicit Variable(const Token& name)
                 : m_VariableName(name) {
     }
 
-    std::any accept(ExprVisitor<std::any>& visitor) override {
+    Object accept(ExprVisitor<Object>& visitor) override {
         return visitor.visitVariableExpr(*this);
     }
 };

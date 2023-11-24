@@ -3,12 +3,11 @@
 #include <utility>
 #include <vector>
 #include <memory>
-#include <any>
 
 #include "../lexer/Token.h"
-//#include "Expr.h"
+#include "../util/common.h"
 
-class Expr;
+//class Expr;
 
 class Block;
 class Class;
@@ -24,16 +23,16 @@ class Break;
 class StmtVisitor {
 public:
     virtual ~StmtVisitor() = default;
-    virtual void visitBlockStmt(Block expr) = 0;
-    virtual void visitClassStmt(Class expr) = 0;
-    virtual void visitExpressionStmt(Expression expr) = 0;
-    virtual void visitFunctionStmt(Function expr) = 0;
-    virtual void visitIfStmt(If expr) = 0;
-    virtual void visitPrintStmt(Print expr) = 0;
-    virtual void visitReturnStmt(Return expr) = 0;
-    virtual void visitVarStmt(Let expr) = 0;
-    virtual void visitWhileStmt(While expr) = 0;
-    virtual void visitBreakStmt(Break expr) = 0;
+    virtual void visitBlockStmt(Block& stmt) = 0;
+    virtual void visitClazzStmt(Class& stmt) = 0;
+    virtual void visitExpressionStmt(Expression& stmt) = 0;
+    virtual void visitFunctionStmt(Function& stmt) = 0;
+    virtual void visitIfStmt(If& stmt) = 0;
+    virtual void visitPrintStmt(Print& stmt) = 0;
+    virtual void visitReturnStmt(Return& stmt) = 0;
+    virtual void visitLetStmt(Let& stmt) = 0;
+    virtual void visitWhileStmt(While& stmt) = 0;
+    virtual void visitBreakStmt(Break& stmt) = 0;
 };
 
 class Stmt {
@@ -44,9 +43,9 @@ public:
 
 class Block : public Stmt {
 public:
-    std::vector<std::shared_ptr<Stmt>> m_Statements;
+    std::vector<UniqueStmtPtr> m_Statements;
 
-    explicit Block(const std::vector<std::shared_ptr<Stmt>>& statements)
+    explicit Block(std::vector<UniqueStmtPtr> statements)
             : m_Statements(std::move(statements)) {
     }
 
@@ -58,26 +57,24 @@ public:
 class Class : public Stmt {
 public:
     Token m_Name;
-    std::shared_ptr<Variable> m_Superclass;
-    std::vector<std::shared_ptr<Function>> m_Methods;
-    std::vector<std::shared_ptr<Function>> m_ClassMethods;
+    std::optional<std::unique_ptr<Variable>> m_Superclass; //Superclass is a Variable expression instead of a Token because the resolver needs to resolve the superclass and it needs an expr to do so.
+    std::vector<std::unique_ptr<Function>> m_Methods;
+    std::vector<std::unique_ptr<Function>> m_ClassMethods;
 
-    Class(Token& name, std::shared_ptr<Variable>& superclass, std::vector<std::shared_ptr<Function>>& methods, std::vector<std::shared_ptr<Function>>& classMethods)
-            : m_Name(std::move(name)), m_Superclass(std::move(superclass)), m_Methods(std::move(methods)), m_ClassMethods(std::move(classMethods)) {
+    Class(const Token& name, std::optional<std::unique_ptr<Variable>> superclass, std::vector<std::unique_ptr<Function>> methods, std::vector<std::unique_ptr<Function>> classMethods)
+            : m_Name(name), m_Superclass(std::move(superclass)), m_Methods(std::move(methods)), m_ClassMethods(std::move(classMethods)) {
     }
 
     void accept(StmtVisitor& visitor) override {
-        return visitor.visitClassStmt(*this);
+        return visitor.visitClazzStmt(*this);
     }
 };
 
 class Expression : public Stmt {
 public:
-    std::shared_ptr<Expr> m_Expression;
+    UniqueExprPtr m_Expression;
 
-    explicit Expression(std::shared_ptr<Expr>& expression)
-                : m_Expression(std::move(expression)) {
-    }
+    explicit Expression(UniqueExprPtr expression) : m_Expression(std::move(expression)) {}
 
     void accept(StmtVisitor& visitor) override {
         visitor.visitExpressionStmt(*this);
@@ -88,10 +85,10 @@ class Function : public Stmt {
 public:
     Token m_Name;
     std::vector<Token> m_Params;
-    std::vector<std::shared_ptr<Stmt>> m_Body;
+    std::vector<UniqueStmtPtr> m_Body;
 
-    Function(const Token& name, std::vector<Token>& params, std::vector<std::shared_ptr<Stmt>>& body)
-                : m_Name(std::move(name)), m_Params(std::move(params)), m_Body(std::move(body)) {
+    Function(const Token& name, const std::vector<Token>& params, std::vector<UniqueStmtPtr> body)
+                : m_Name(name), m_Params(params), m_Body(std::move(body)) {
     }
 
     void accept(StmtVisitor& visitor) override {
@@ -101,11 +98,11 @@ public:
 
 class If : public Stmt {
 public:
-    std::shared_ptr<Expr> m_Condition;
-    std::shared_ptr<Stmt> m_ThenBranch;
-    std::shared_ptr<Stmt> m_ElseBranch;
+    UniqueExprPtr m_Condition;
+    UniqueStmtPtr m_ThenBranch;
+    std::optional<UniqueStmtPtr> m_ElseBranch;
 
-    If(const std::shared_ptr<Expr>& condition, std::shared_ptr<Stmt>& thenBranch, std::shared_ptr<Stmt>& elseBranch)
+    If(UniqueExprPtr condition, UniqueStmtPtr thenBranch, std::optional<UniqueStmtPtr> elseBranch)
         : m_Condition(std::move(condition)), m_ThenBranch(std::move(thenBranch)), m_ElseBranch(std::move(elseBranch)) {
     }
 
@@ -116,9 +113,9 @@ public:
 
 class Print : public Stmt {
 public:
-    std::shared_ptr<Expr> m_Expression;
+    std::optional<UniqueExprPtr> m_Expression;
 
-    explicit Print(std::shared_ptr<Expr>& expression)
+    explicit Print(std::optional<UniqueExprPtr> expression)
             : m_Expression(std::move(expression)) {
     }
 
@@ -130,10 +127,10 @@ public:
 class Return : public Stmt {
 public:
     Token m_Keyword;
-    std::shared_ptr<Expr> m_Value;
+    std::optional<UniqueExprPtr> m_Value;
 
-    Return(Token& keyword, std::shared_ptr<Expr>& value)
-            : m_Keyword(std::move(keyword)), m_Value(std::move(value)) {
+    Return(const Token& keyword, std::optional<UniqueExprPtr> value)
+            : m_Keyword(keyword), m_Value(std::move(value)) {
     }
 
     void accept(StmtVisitor& visitor) override {
@@ -144,23 +141,23 @@ public:
 class Let : public Stmt {
 public:
     Token m_Name;
-    std::shared_ptr<Expr> m_Initializer;
+    std::optional<UniqueExprPtr> m_Initializer; // Optional because you may declare a variable without initializing it.
 
-    Let(Token& name, std::shared_ptr<Expr>& initializer)
-        : m_Name(std::move(name)), m_Initializer(std::move(initializer)) {
+    Let(const Token& name, std::optional<UniqueExprPtr> initializer)
+        : m_Name(name), m_Initializer(std::move(initializer)) {
     }
 
     void accept(StmtVisitor& visitor) override {
-        visitor.visitVarStmt(*this);
+        visitor.visitLetStmt(*this);
     }
 };
 
 class While : public Stmt {
 public:
-    std::shared_ptr<Expr> m_Condition;
-    std::shared_ptr<Stmt> m_Body;
+    UniqueExprPtr m_Condition;
+    UniqueStmtPtr m_Body;
 
-    While(std::shared_ptr<Expr>& condition, std::shared_ptr<Stmt>& body)
+    While(UniqueExprPtr condition, UniqueStmtPtr body)
         : m_Condition(std::move(condition)), m_Body(std::move(body)) {
     }
 
@@ -173,8 +170,8 @@ class Break : public Stmt {
 public:
     Token m_Keyword;
 
-    explicit Break(Token& keyword)
-        : m_Keyword(std::move(keyword)) {
+    explicit Break(const Token& keyword)
+        : m_Keyword(keyword) {
     }
 
     void accept(StmtVisitor& visitor) override {

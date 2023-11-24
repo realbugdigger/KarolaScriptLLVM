@@ -3,17 +3,32 @@
 
 #include "lexer/lexer.h"
 #include "parser/Parser.h"
+#include "interpreter/Interpreter.h"
+#include "interpreter/Resolver.h"
+#include "interpreter/RuntimeError.h"
 
+Interpreter interpreter = Interpreter();
 
 // Both the prompt and the file runner are thin wrappers around this core function
 static void run(const char* program) {
     initLexer(program);
     std::vector<Token> tokenList = scanTokens();
     auto* parser = new Parser(tokenList);
-    parser->parse();
-    for (auto &t : tokenList) {
-        std::cout << t.type << "\n";
+    std::vector<UniqueStmtPtr> statements = parser->parse();
+    Resolver resolver;
+
+    resolver.resolve(statements);
+
+    try {
+        interpreter.interpret(statements);
+    } catch (const RuntimeError &exception) {
+//        std::cout << exception.what() << "\n";
+//        return 70;
     }
+
+//    for (auto &t : tokenList) {
+//        std::cout << t.type << "\n";
+//    }
     free(parser);
 }
 
@@ -29,6 +44,7 @@ static void repl() {
 
 //        interpret(line);
         run(line);
+        tokens = {};
     }
 }
 
