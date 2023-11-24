@@ -14,9 +14,14 @@ private:
 public:
     explicit RuntimeError() : std::runtime_error{""} {}
 
-    RuntimeError(const Token& token, const std::string& message)
+    RuntimeError(const Token& token, const std::string& message, int line = -1)
             : std::runtime_error{message}, token{token}
     {
+        if (line != -1){
+            this->message = "[Line " + std::to_string(line) + "] " +  "Runtime Error: " + message;
+        } else {
+            this->message = "Runtime Error: " + message;
+        }
     }
 
     explicit RuntimeError(const std::string& message, int line = -1)

@@ -143,7 +143,7 @@ static TokenType identifierType() {
                 switch (lexeme.start[1]) {
                     case 'a': return checkKeyword(2, 3, "lse", TOKEN_FALSE);
                     case 'o': return checkKeyword(2, 1, "r", TOKEN_FOR);
-                    case 'u': return checkKeyword(2, 1, "n", TOKEN_FUNCT);
+                    case 'u': return checkKeyword(2, 3, "nct", TOKEN_FUNCT);
                 }
             }
             break;
@@ -153,7 +153,7 @@ static TokenType identifierType() {
         case 'k': return checkKeyword(1, 6, "onsole", TOKEN_KONSOLE);
         case 'r': return checkKeyword(1, 5, "eturn", TOKEN_RETURN);
         case 's': return checkKeyword(1, 4, "uper", TOKEN_SUPER);
-        case 'v': return checkKeyword(1, 2, "ar", TOKEN_LET);
+        case 'l': return checkKeyword(1, 2, "et", TOKEN_LET);
         case 'w': return checkKeyword(1, 4, "hile", TOKEN_WHILE);
     }
 
@@ -162,7 +162,13 @@ static TokenType identifierType() {
 
 static Token identifier() {
     while (isAlpha(peek()) || isDigit(peek())) advance();
-    return makeToken(identifierType());
+
+    TokenType tokenType = identifierType();
+    if (tokenType == TOKEN_IDENTIFIER) {
+        std::string literal(lexeme.start, (int)(lexeme.current - lexeme.start));
+        return makeToken(tokenType, literal);
+    }
+    return makeToken(tokenType);
 }
 
 static Token number() {
