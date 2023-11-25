@@ -10,6 +10,8 @@
 #include "../parser/Stmt.h"
 #include "../util/common.h"
 
+inline bool hadResolutionError = false;
+
 class Resolver : public StmtVisitor, public ExprVisitor<Object> {
 private:
     enum FunctionType {

@@ -16,11 +16,17 @@ static void run(const char* program) {
     auto* parser = new Parser(tokenList);
     std::vector<UniqueStmtPtr> statements = parser->parse();
 
+    // Stop if there was a syntax error.
     if (hadParseError)
-        exit(65);
+        return;
+//        exit(65);
 
     Resolver resolver;
     resolver.resolve(statements);
+
+    // Stop if there was a resolution error.
+    if (hadResolutionError)
+        return;
 
     try {
         interpreter.interpret(statements);
@@ -47,7 +53,10 @@ static void repl() {
 
 //        interpret(line);
         run(line);
+
         tokens = {};
+        hadParseError = false;
+        hadResolutionError = false;
     }
 }
 

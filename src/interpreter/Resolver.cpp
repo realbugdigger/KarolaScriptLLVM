@@ -85,6 +85,7 @@ void Resolver::declare(const Token& name) {
     // Don't allow the same variable declaration more than once.
     if (scope.find(name.lexeme) != scope.end()) {
         ErrorReporter::error(name.line, "Variable with this name already declared in this scope.");
+        hadResolutionError = true;
     }
 
 
@@ -178,6 +179,7 @@ Object Resolver::visitBinaryExpr(Binary& expr) {
 Object Resolver::visitThisExpr(This& expr) {
     if (currentClass == CLASS_NONE) {
         ErrorReporter::error(expr.m_Keyword.line, "Cannot use 'this' outside of a class.");
+        hadResolutionError = true;
         return Object::Null();
     }
     resolveLocal(expr, expr.m_Keyword);
@@ -187,8 +189,10 @@ Object Resolver::visitThisExpr(This& expr) {
 Object Resolver::visitSuperExpr(Super& expr) {
     if (currentClass == CLASS_NONE) {
         ErrorReporter::error(expr.m_Keyword.line, "Cannot use 'super' outside of a class.");
+        hadResolutionError = true;
     } else if (currentClass != SUBCLASS) {
         ErrorReporter::error(expr.m_Keyword.line, "Cannot use 'super' in a class with no superclass.");
+        hadResolutionError = true;
     }
     resolveLocal(expr, expr.m_Keyword);
     return Object::Null();
@@ -205,6 +209,7 @@ Object Resolver::visitVariableExpr(Variable& expr) {
         auto searched = last.find(expr.m_VariableName.lexeme);
         if (searched != last.end() && !searched->second) {
             ErrorReporter::error(expr.m_VariableName.line, "Cannot read local variable in its own initializer.");
+            hadResolutionError = true;
         }
     }
     resolveLocal(expr, expr.m_VariableName);
@@ -227,11 +232,13 @@ void Resolver::visitExpressionStmt(Expression& stmt) {
 void Resolver::visitReturnStmt(Return& stmt) {
     if (currentFunction == FUNCTION_NONE) {
         ErrorReporter::error(stmt.m_Keyword.line, "Cannot return from top-level code.");
+        hadResolutionError = true;
     }
 
     if (stmt.m_Value.has_value()) {
         if (currentFunction == INITIALIZER) {
             ErrorReporter::error(stmt.m_Keyword.line, "Cannot return a value from an initializer.");
+            hadResolutionError = true;
         }
         resolve(stmt.m_Value->get());
     }
@@ -295,6 +302,7 @@ void Resolver::visitClazzStmt(Class& stmt) {
     if (stmt.m_Superclass.has_value() &&
         stmt.m_Name.lexeme == stmt.m_Superclass->get()->m_VariableName.lexeme) {
         ErrorReporter::error(stmt.m_Superclass->get()->m_VariableName.line, "A class cannot inherit from itself.");
+        hadResolutionError = true;
     }
 
     if (stmt.m_Superclass.has_value()) {
