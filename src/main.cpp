@@ -35,9 +35,6 @@ static void run(const char* program) {
 //        return 70;
     }
 
-//    for (auto &t : tokenList) {
-//        std::cout << t.type << "\n";
-//    }
     free(parser);
 }
 
@@ -51,7 +48,6 @@ static void repl() {
             break;
         }
 
-//        interpret(line);
         run(line);
 
         tokens = {};
@@ -91,11 +87,14 @@ static char* readFile(const char* path) {
 
 static void runFile(const char* path) {
     char* source = readFile(path);
-//    InterpretResult result = interpret(source);
-    free(source);
 
-//    if (result == INTERPRET_COMPILE_ERROR) exit(65);
-//    if (result == INTERPRET_RUNTIME_ERROR) exit(70);
+    run(source);
+
+    tokens = {};
+    hadParseError = false;
+    hadResolutionError = false;
+
+    free(source);
 }
 
 int main(int argc, const char* argv[]) {
@@ -104,14 +103,15 @@ int main(int argc, const char* argv[]) {
 
     // 2. This interpreter is pretty bare bones. It doesn't have stuff like interactive debugger and static analyzer.
 
-    // 3.
-
-    if (argc == 1) {
+    if (argc == 2) {
         repl();
-    } else if (argc == 2) {
-        runFile(argv[1]);
+    } else if (argc == 1) {
+//        runFile(argv[1]);
+//        runFile("/home/marko/compilers/KarolaScript/src/resources/code1.ks");
+//        runFile("/home/marko/compilers/KarolaScript/src/resources/code2.ks");
+        runFile("/home/marko/compilers/KarolaScript/src/resources/code3.ks");
     } else {
-        fprintf(stderr, "Usage: ks [path]\n");
+        fprintf(stderr, "Usage: ks [filePath]\n");
         exit(64);
     }
 
