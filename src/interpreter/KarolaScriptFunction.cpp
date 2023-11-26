@@ -24,6 +24,18 @@ Object KarolaScriptFunction::call(Interpreter& interpreter, const std::vector<Ob
 
     if (!arguments.empty()) {
         for (int i = 0; i < m_Declaration->m_Params.size(); i++) { // m_Declaration->m_Params.size() == arguments.size() => HAS TO BE!!!
+//            if (!arguments[i].isNull() && (arguments[i].type == ObjType::OBJTYPE_CALLABLE && arguments[i].getCallable()->m_Type == CallableType::ANON_FUNCTION)/*ObjType::OBJTYPE_ANONFUNCTION*/) {
+//            std::vector<UniqueStmtPtr> ptr = arguments[i].getAnonFunction()->m_Body;
+            if (!arguments[i].isNull() && arguments[i].isAnonFunction()) {
+                Function* functStmt = new Function(m_Declaration->m_Params[i], arguments[i].getAnonFunction()->m_Params, arguments[i].getAnonFunction()->m_Body);
+                std::shared_ptr<KarolaScriptFunction> ksFunct = std::make_unique<KarolaScriptFunction>(functStmt, environment, false);
+                Object anonFunctObject(ksFunct);
+                environment->define(m_Declaration->m_Params[i], anonFunctObject);
+            } else {
+                environment->define(m_Declaration->m_Params[i], arguments[i]);
+            }
+
+
 //            if (arguments[i] && arguments[i]->type() == typeid(AnonFunction)) {
 //                try {
 //                    std::shared_ptr<Function> stmt = std::make_shared<Function>(m_Declaration->m_Params[i], std::any_cast<AnonFunction>(arguments[i]).m_Params, std::any_cast<AnonFunction>(arguments[i]).m_Body);
@@ -34,7 +46,7 @@ Object KarolaScriptFunction::call(Interpreter& interpreter, const std::vector<Ob
 //                    std::cout << "Bad cast: " << e.what() << std::endl; // This should definitely never ever happen.
 //                }
 //            } else {
-                environment->define(m_Declaration->m_Params[i], arguments[i]); // environment->define(m_Declaration->m_Params[i].lexeme, arguments[i]); ????
+//                environment->define(m_Declaration->m_Params[i], arguments[i]); // environment->define(m_Declaration->m_Params[i].lexeme, arguments[i]); ????
 //            }
         }
     }

@@ -5,11 +5,13 @@
 #include <string>
 
 enum ObjType {
-    OBJTYPE_NULL, OBJTYPE_BOOL, OBJTYPE_NUMBER, OBJTYPE_STRING, OBJTYPE_CALLABLE, OBJTYPE_CLASS, OBJTYPE_FUNCTION, OBJTYPE_INSTANCE
+    OBJTYPE_NULL, OBJTYPE_BOOL, OBJTYPE_NUMBER, OBJTYPE_STRING, OBJTYPE_CALLABLE, OBJTYPE_CLASS, OBJTYPE_ANONFUNCTION, OBJTYPE_FUNCTION, OBJTYPE_INSTANCE
 };
 
 class KarolaScriptCallable;
 class KarolaScriptInstance;
+
+class AnonFunction;
 
 struct Token;
 
@@ -17,11 +19,12 @@ struct Token;
  * be shared with multiple users. For example, two variables can refer to the same function.
  * */
 using SharedCallablePtr = std::shared_ptr<KarolaScriptCallable>;
+using SharedAnonFunctPtr = std::shared_ptr<AnonFunction>;
 using SharedInstancePtr = std::shared_ptr<KarolaScriptInstance>;
 
 /* Object class is used to represent variables, instances, functions, classes, etc, essentially surrendering type safety
  * and having to depend on instanceof checks. I attempted to maintain some type safety with this class.
- * LoxObject is a wrapper that can hold literals, callables
+ * Object is a wrapper that can hold literals, callables
  * such as functions and classes, and instances.
  * */
 class Object {
@@ -30,6 +33,7 @@ private:
     bool boolean = false;
     std::string str;
     SharedCallablePtr callable;
+    SharedAnonFunctPtr anonFunction;
     SharedInstancePtr instance;
 public:
     ObjType type = ObjType::OBJTYPE_NULL;
@@ -47,6 +51,10 @@ public:
     explicit Object(SharedCallablePtr callable);
 
     explicit Object(KarolaScriptCallable* ptr) = delete;
+
+    explicit Object(SharedAnonFunctPtr anonFunctPtr);
+
+    explicit Object(AnonFunction* ptr) = delete;
 
     explicit Object(SharedInstancePtr instance);
 
@@ -66,6 +74,8 @@ public:
 
     bool isCallable() const;
 
+    bool isAnonFunction() const;
+
     bool isInstance() const;
 
     double getNumber() const;
@@ -75,6 +85,8 @@ public:
     std::string getString() const;
 
     SharedCallablePtr getCallable() const;
+
+    SharedAnonFunctPtr getAnonFunction() const;
 
     SharedInstancePtr getClassInstance() const;
 };
