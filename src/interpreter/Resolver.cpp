@@ -113,14 +113,33 @@ void Resolver::define(const Token& name) {
 }
 
 void Resolver::beginScope() {
-//        std::unordered_map<std::string, bool> s;
-//        scopes.push_back(s);
-    scopes.emplace_back(std::unordered_map<std::string, bool>());
+    scopes.push_back(std::unordered_map<std::string, bool>()); // change to emplace_back ???
+    usages.push_back(std::unordered_map<std::string, int>()); // change to emplace_back ???
 }
 
 void Resolver::endScope() {
+    std::unordered_map<std::string, int> last_element = usages.back();
+    for (auto& pair : last_element) {
+        if (pair.second == 0) {
+            std::string warningMessage = "Variable " + pair.first + " was declared but never used.";
+            ErrorReporter::warning(warningMessage.c_str());
+        }
+    }
     scopes.pop_back();
 }
+
+void Resolver::increaseUsage(const Token& name) {
+    if (!scopes.empty() && (scopes.back().find(name.lexeme) != scopes.back().end())) {
+        // increment usage count of the variable by one
+        int count = 0;
+        if (usages.back().count(name.lexeme) > 0) {
+            count = usages.back().count(name.lexeme);
+        }
+
+        usages.back()[name.lexeme] = count + 1;
+    }
+}
+
 
 // EXPRESSIONS
 
@@ -167,6 +186,8 @@ Object Resolver::visitGetExpr(Get& expr) {
 Object Resolver::visitAssignExpr(Assign& expr) {
     resolve(expr.m_Value.get());
     resolveLocal(expr, expr.m_Name);
+
+    increaseUsage(expr.m_Name);
     return Object::Null();
 }
 
@@ -212,7 +233,9 @@ Object Resolver::visitVariableExpr(Variable& expr) {
             hadResolutionError = true;
         }
     }
+
     resolveLocal(expr, expr.m_VariableName);
+    increaseUsage(expr.m_VariableName);
     return Object::Null();
 }
 
@@ -248,6 +271,7 @@ void Resolver::visitBreakStmt(Break& stmt) {
     // If not in a nested loop, add a new error.
     if (loopNestingLevel == 0) {
         ErrorReporter::error(stmt.m_Keyword, "Can't break outside of a loop.");
+        hadResolutionError = true;
     }
     //throw BreakException(stmt.m_Keyword);
     //        throw BreakError(stmt.m_Keyword);
@@ -259,6 +283,11 @@ void Resolver::visitLetStmt(Let& stmt) {
         resolve(stmt.m_Initializer->get());
     }
     define(stmt.m_Name);
+
+    if (!usages.empty()) {
+        std::unordered_map<std::string, int>& last_element = usages.back();
+        last_element[stmt.m_Name.lexeme] = 0;
+    }
 }
 
 void Resolver::visitWhileStmt(While& stmt) {

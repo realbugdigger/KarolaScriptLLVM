@@ -37,10 +37,18 @@ public:
     }
 
     static void runtimeError(RuntimeError& error) {
-        fprintf(stderr, "[!!!] Runtime Error: \"%s\".\n", error.getMessage().c_str());
+        fprintf(stderr, "[!] Runtime Error: \"%s\".\n", error.getMessage().c_str());
+    }
+
+    static void warning(const char* message) {
+        reportWarning(message);
     }
 private:
     static void report(int line, const char* where, const char* message) {
         fprintf(stderr, "[%d] Error %s: %s\n", line, where, message);
+    }
+
+    static void reportWarning(const char* message) {
+        fprintf(stderr, "[*] Warning: %s\n", message);
     }
 };

@@ -53,9 +53,7 @@ private:
     }
 
 
-    // TODO Either throw an error(), with return type being ParseError, or in method use ErrorReporter for reporting parsing errors ----> find usages and fix it !!!!!!
-    // Maybe call error() to just report the error and keep parsing, but throw it when parser need's to synchronize
-    // use some flag like `hadError` ???????
+    // Call error() to just report the error and keep parsing, but throw it when parser need's to synchronize
     ParseError error(const Token& token, const std::string& message) {
         ErrorReporter::error(token, message.c_str());
         return ParseError();
@@ -442,11 +440,6 @@ private:
 
     UniqueStmtPtr breakStatement() {
         Token keyword = previous();
-
-//        if (!insideLoop()) {
-//            error(keyword, "Must be inside a loop to use 'break'.");
-//            return null;
-//        }
 
         consume(TOKEN_SEMICOLON, "Expect ';' after 'break'.");
         return std::make_unique<Break>(keyword);

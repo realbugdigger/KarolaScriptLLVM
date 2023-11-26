@@ -33,7 +33,7 @@ private:
     int loopNestingLevel = 0;
 
     std::vector<std::unordered_map<std::string, bool>> scopes;
-    std::vector<std::unordered_map<std::string, bool>> usages;
+    std::vector<std::unordered_map<std::string, int>> usages;
 public:
     void resolve(const std::vector<UniqueStmtPtr> &statements);
     void resolve(Stmt* stmt);
@@ -68,6 +68,8 @@ public:
 private:
     void beginScope();
     void endScope();
+
+    void increaseUsage(const Token& name);
 
     void resolveFunction(Function& function, FunctionType type);
     void resolveFunction(AnonFunction& function);

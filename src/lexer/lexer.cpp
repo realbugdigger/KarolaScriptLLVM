@@ -136,6 +136,7 @@ static TokenType checkKeyword(int start, int length, const char* rest, TokenType
 static TokenType identifierType() {
     switch (lexeme.start[0]) {
         case 'a': return checkKeyword(1, 2, "nd", TOKEN_AND);
+        case 'b': return checkKeyword(1, 4, "reak", TOKEN_BREAK);
         case 'c': return checkKeyword(1, 4, "lazz", TOKEN_CLAZZ);
         case 'e': return checkKeyword(1, 3, "lse", TOKEN_ELSE);
         case 'f':
