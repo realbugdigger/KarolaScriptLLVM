@@ -118,7 +118,7 @@ std::string Interpreter::stringify(const Object& object) {
         case ObjType::OBJTYPE_NULL:
             return "null";
         case ObjType::OBJTYPE_BOOL:
-            (object.getBoolean() ? std::string("true") : std::string("false"));
+            return (object.getBoolean() ? std::string("true") : std::string("false"));
         case ObjType::OBJTYPE_NUMBER:
             if (std::abs(floor(object.getNumber())) == std::abs(object.getNumber())){ //If it has no decimal part
                 return std::to_string((long long) object.getNumber());
