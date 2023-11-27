@@ -74,6 +74,8 @@ public:
     void visitClazzStmt(Class& clazzStmt) override;
 
 public:
+    void resolve(Expr* expr, int depth);
+
     Object evaluate(Expr* expr);
 
     void execute(Stmt* stmt);

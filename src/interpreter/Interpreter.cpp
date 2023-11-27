@@ -31,6 +31,10 @@ void Interpreter::interpret(std::vector<UniqueStmtPtr>& statements) {
     }
 }
 
+void Interpreter::resolve(Expr* expr, int depth) {
+    localsDistances[expr] = depth;
+}
+
 Object Interpreter::evaluate(Expr* expr) {
     return expr->accept(*this);
 }
