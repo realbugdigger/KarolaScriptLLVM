@@ -14,6 +14,7 @@
 #include "KarolaScriptCallable.h"
 #include "../util/Utils.h"
 #include "ks_stdlib/StdLibFunctions.h"
+#include "KarolaScriptAnonFunction.h"
 
 Interpreter::Interpreter() {
     globals = std::make_unique<Environment>();
@@ -205,64 +206,26 @@ Object Interpreter::visitGroupingExpr(Grouping& expr) {
     return evaluate(expr.m_Expression.get());
 }
 
-//Object visitCallExpr(Call& expr) override {
-//// Evaluate the callee (the function or class being called).
-//auto callee = evaluate(expr.m_Callee);
-//
-//// Collect the arguments passed to the function or class.
-//std::vector<std::any> arguments;
-//arguments.reserve(expr.m_Arguments.size());
-//for (auto& arg : expr.m_Arguments)
-//{
-//arguments.emplace_back(evaluate(arg));
-//}
-//
-//// Prevent calling objects which are not of callable type.
-//std::unique_ptr<Callable> function;
-//if (callee.type() == typeid(FunctionType))
-//{
-//function = std::make_unique<FunctionType>(std::any_cast<FunctionType>(callee));
-//}
-//else if (callee.type() == typeid(ClockCallable))
-//{
-//function = std::make_unique<ClockCallable>();
-//}
-//else if (callee.type() == typeid(PrintCallable))
-//{
-//function = std::make_unique<PrintCallable>(arguments.size());
-//}
-//else
-//{
-//// Throw an error if the callee is not callable (a function or class).
-//throw RuntimeError(expr.m_Paren, expr.m_Paren.lexeme + " is not callable. Callable object must be a function or a class.");
-//}
-//
-//// Check that the number of arguments passed to the function or class
-//// matches the expected number
-//if (arguments.size() != function->getArity())
-//{
-//throw RuntimeError(expr.m_Paren, "Expected " + std::to_string(function->getArity()) +
-//" arguments but got " +
-//std::to_string(arguments.size()) + " .");
-//}
-//
-//// Return by calling the function.
-//return function->call(*this, arguments);
-//}
-
 Object Interpreter::visitCallExpr(Call& callExpr) {
     Object callee = evaluate(callExpr.m_Callee.get());
 
     std::vector<Object> arguments;
-    for (const UniqueExprPtr &arg : callExpr.m_Arguments){
-        arguments.push_back(evaluate(arg.get()));
+    for (const UniqueExprPtr &arg : callExpr.m_Arguments) {
+        Object argObject = evaluate(arg.get());
+        if (argObject.isAnonFunction()) {
+            KarolaScriptFunction* ksFunction = dynamic_cast<KarolaScriptFunction *>(callee.getCallable().get());
+            environment->define(ksFunction->m_Declaration->m_Name.lexeme, argObject);
+            arguments.push_back(argObject);
+        } else {
+            arguments.push_back(argObject);
+        }
     }
 
-    if (!callee.isCallable()){
+    if (!callee.isCallable() && !callee.isAnonFunction()) {
         throw RuntimeError("Expression is not callable", callExpr.m_Paren.line);
     }
     KarolaScriptCallable* callable = callee.getCallable().get();
-    if (arguments.size() != callable->arity()){
+    if (arguments.size() != callable->arity()) {
         std::stringstream ss;
         ss  << callable->name() << " expected " << callable->arity() << " argument(s) but instead got " << arguments.size();
         throw RuntimeError(ss.str(), callExpr.m_Paren.line);
@@ -272,9 +235,14 @@ Object Interpreter::visitCallExpr(Call& callExpr) {
 }
 
 Object Interpreter::visitAnonFunctionExpr(AnonFunction& expr) {
+    SharedCallablePtr anonFunction = std::make_shared<KarolaScriptAnonFunction>(&expr, environment);
+    Object anonFunctionObject(anonFunction);
+    return anonFunctionObject;
+//    environment->define(expr.m_Name.lexeme, functionObject);
+
 //        Stmt.Function stmt = new Stmt.Function(null, expr.params, expr.body);
 //        LoxFunction function = new LoxFunction(stmt, environment);
-    return Object::Null();
+//    return Object::Null();
 }
 
 Object Interpreter::visitGetExpr(Get& expr) {
