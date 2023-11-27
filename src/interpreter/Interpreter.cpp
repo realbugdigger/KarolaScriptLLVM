@@ -321,19 +321,19 @@ Object Interpreter::visitBinaryExpr(Binary& expr) {
 
         case TOKEN_GREATER:
             checkNumberOperands(expr.m_Operator, left, right);
-            return Object(left.getBoolean() > right.getBoolean());
+            return Object(left.getNumber() > right.getNumber());
 
         case TOKEN_GREATER_EQUAL:
             checkNumberOperands(expr.m_Operator, left, right);
-            return Object(left.getBoolean() >= right.getBoolean());
+            return Object(left.getNumber() >= right.getNumber());
 
         case TOKEN_LESS:
             checkNumberOperands(expr.m_Operator, left, right);
-            return Object(left.getBoolean() < right.getBoolean());
+            return Object(left.getNumber() < right.getNumber());
 
         case TOKEN_LESS_EQUAL:
             checkNumberOperands(expr.m_Operator, left, right);
-            return Object(left.getBoolean() <= right.getBoolean());
+            return Object(left.getNumber() <= right.getNumber());
 
         case TOKEN_EQUAL_EQUAL:
             return Object(isEqual(left, right));

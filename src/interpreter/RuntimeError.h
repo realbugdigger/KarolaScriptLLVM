@@ -30,7 +30,7 @@ public:
         if (line != -1){
             this->message = "[Line " + std::to_string(line) + "] " +  "Runtime Error: " + message;
         } else {
-            this->message = "Runtime Error: " + message;
+            this->message = message;
         }
     }
 
