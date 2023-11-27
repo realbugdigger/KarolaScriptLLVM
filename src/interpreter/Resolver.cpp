@@ -5,7 +5,10 @@
 #include "RuntimeError.h"
 #include "../ErrorReporter.h"
 #include "../lexer/Token.h"
+#include "Interpreter.h"
 
+
+Resolver::Resolver(Interpreter& interpreter) : m_Interpreter(interpreter) {}
 
 void Resolver::resolve(const std::vector<UniqueStmtPtr> &statements) {
     for (auto& stmt : statements) {
@@ -43,8 +46,8 @@ void Resolver::resolveLocal(const Expr& expr, const Token &identifier) {
         if (scope->find(identifier.lexeme) != scope->end())
         {
 //                m_Interpreter.resolve(expr, scopes.size() - 1 - i);
-            distances[&expr] = scopes.size() - i - 1; //number of hops when resolving variable // remove this line and keep next ????
-//            m_Interpreter.resolve(expr, std::distance(scopes.rbegin(), scope));
+//            distances[&expr] = scopes.size() - i - 1; //number of hops when resolving variable // remove this line and keep next ????
+            m_Interpreter.resolve(const_cast<Expr *>(&expr), std::distance(scopes.rbegin(), scope));
             return;
         }
         i++;

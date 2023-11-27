@@ -12,6 +12,8 @@
 
 inline bool hadResolutionError = false;
 
+class Interpreter;
+
 class Resolver : public StmtVisitor, public ExprVisitor<Object> {
 private:
     enum FunctionType {
@@ -28,6 +30,8 @@ private:
     ClassType currentClass = CLASS_NONE;
     FunctionType currentFunction = FUNCTION_NONE;
 
+    Interpreter& m_Interpreter;
+
     std::unordered_map<const Expr*, int> distances;
 
     int loopNestingLevel = 0;
@@ -35,6 +39,8 @@ private:
     std::vector<std::unordered_map<std::string, bool>> scopes;
     std::vector<std::unordered_map<std::string, int>> usages;
 public:
+    Resolver(Interpreter& interpreter);
+
     void resolve(const std::vector<UniqueStmtPtr> &statements);
     void resolve(Stmt* stmt);
     void resolve(Expr* expr);

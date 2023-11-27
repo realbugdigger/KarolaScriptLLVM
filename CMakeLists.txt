@@ -30,4 +30,6 @@ add_executable(KarolaScript src/main.cpp
         src/util/Utils.cpp
         src/interpreter/ks_stdlib/StdLibFunctions.h
         src/interpreter/ks_stdlib/StdLibFunctions.cpp
+        src/interpreter/KarolaScriptAnonFunction.h
+        src/interpreter/KarolaScriptAnonFunction.cpp
 )

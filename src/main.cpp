@@ -8,6 +8,7 @@
 #include "interpreter/RuntimeError.h"
 
 Interpreter interpreter = Interpreter();
+Resolver resolver = Resolver(interpreter);
 
 // Both the prompt and the file runner are thin wrappers around this core function
 static void run(const char* program) {
@@ -21,7 +22,6 @@ static void run(const char* program) {
         return;
 //        exit(65);
 
-    Resolver resolver;
     resolver.resolve(statements);
 
     // Stop if there was a resolution error.
@@ -110,7 +110,9 @@ int main(int argc, const char* argv[]) {
 //        runFile("/home/marko/compilers/KarolaScript/src/resources/code1.ks");
 //        runFile("/home/marko/compilers/KarolaScript/src/resources/code2.ks");
 //        runFile("/home/marko/compilers/KarolaScript/src/resources/code3.ks");
-        runFile("/home/marko/compilers/KarolaScript/src/resources/code4.ks");
+//        runFile("/home/marko/compilers/KarolaScript/src/resources/code4.ks");
+//        runFile("/home/marko/compilers/KarolaScript/src/resources/code5.ks");
+//        runFile("/home/marko/compilers/KarolaScript/src/resources/code6.ks");
     } else {
         fprintf(stderr, "Usage: ks [filePath]\n");
         exit(64);

@@ -1,4 +1,4 @@
-#include "KarolaScriptFunction.h"
+#include "KarolaScriptAnonFunction.h"
 
 #include <cassert>
 #include <memory>
@@ -13,13 +13,12 @@
 #include "KarolaScriptClass.h"
 #include "RuntimeError.h"
 
-KarolaScriptFunction::KarolaScriptFunction(const Function* declaration_,
-                                           std::shared_ptr<Environment> closure_,
-                                           bool isInitializer_
-                                                )
-                    : KarolaScriptCallable(CallableType::FUNCTION), m_Declaration(declaration_), m_Closure(std::move(closure_)), m_IsInitializer_(isInitializer_) {}
+KarolaScriptAnonFunction::KarolaScriptAnonFunction(const AnonFunction* declaration_,
+                                           std::shared_ptr<Environment> closure_
+                                           )
+        : KarolaScriptCallable(CallableType::ANON_FUNCTION), m_Declaration(declaration_), m_Closure(std::move(closure_)) {}
 
-Object KarolaScriptFunction::call(Interpreter& interpreter, const std::vector<Object>& arguments) {
+Object KarolaScriptAnonFunction::call(Interpreter& interpreter, const std::vector<Object>& arguments) {
     std::shared_ptr<Environment> environment = std::make_shared<Environment>(m_Closure);
 
     if (!arguments.empty()) {
@@ -27,8 +26,8 @@ Object KarolaScriptFunction::call(Interpreter& interpreter, const std::vector<Ob
 //            if (!arguments[i].isNull() && (arguments[i].type == ObjType::OBJTYPE_CALLABLE && arguments[i].getCallable()->m_Type == CallableType::ANON_FUNCTION)/*ObjType::OBJTYPE_ANONFUNCTION*/) {
 //            std::vector<UniqueStmtPtr> ptr = arguments[i].getAnonFunction()->m_Body;
             if (!arguments[i].isNull() && arguments[i].isAnonFunction()) {
-                Function* functStmt = new Function(m_Declaration->m_Params[i], arguments[i].getAnonFunction()->m_Params, arguments[i].getAnonFunction()->m_Body);
-                std::shared_ptr<KarolaScriptFunction> ksFunct = std::make_unique<KarolaScriptFunction>(functStmt, environment, false);
+                AnonFunction* functStmt = new AnonFunction(/*m_Declaration->m_Params[i],*/ arguments[i].getAnonFunction()->m_Params, arguments[i].getAnonFunction()->m_Body);
+                std::shared_ptr<KarolaScriptAnonFunction> ksFunct = std::make_unique<KarolaScriptAnonFunction>(functStmt, environment);
                 Object anonFunctObject(ksFunct);
                 environment->define(m_Declaration->m_Params[i], anonFunctObject);
             } else {
@@ -57,37 +56,12 @@ Object KarolaScriptFunction::call(Interpreter& interpreter, const std::vector<Ob
         /*NOTE: We're using exceptions as control flow here because it is the cleanest way to implement return given
         how the book implements the interpreter. This exception was thrown in the visitReturnStmt method of the interpreter*/
 
-        //Constructor should always implicitly return "this".
-        if (m_IsInitializer_) {
-            return m_Closure->getAt(0, "this");
-        }
         return returnValue.m_Value;
-    }
-
-    if (m_IsInitializer_) {
-        //Constructor should always implicitly return "this". This line covers the case where the constructor has no return stmt
-        //but we still need to return "this".
-        return m_Closure->getAt(0, "this");
     }
 
     return Object::Null();
 }
 
-int KarolaScriptFunction::arity() {
+int KarolaScriptAnonFunction::arity() {
     return m_Declaration->m_Params.size();
-}
-
-KarolaScriptFunction* KarolaScriptFunction::bind(SharedInstancePtr instance) {
-    std::shared_ptr<Environment> environment = std::make_shared<Environment>(m_Closure);
-    Object instanceObj(std::move(instance));
-    environment->define("this", instanceObj);
-    return new KarolaScriptFunction(m_Declaration, environment, m_IsInitializer_);
-}
-
-std::string KarolaScriptFunction::toString() {
-    return "<fn " + name() + ">";
-}
-
-std::string KarolaScriptFunction::name() {
-    return m_Declaration->m_Name.lexeme;
 }
