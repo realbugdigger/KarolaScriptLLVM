@@ -32,8 +32,8 @@ public:
     std::string name() override;
 
 //    std::shared_ptr<KarolaScriptFunction> findClassMethod(const std::string& name) {
-//        if (m_ClassMethods.find(name) != m_ClassMethods.end()) {
-//            return m_ClassMethods.at(name);
+//        if (m_StaticMethods.find(name) != m_StaticMethods.end()) {
+//            return m_StaticMethods.at(name);
 //        }
 //        return nullptr;
 //    }

@@ -507,7 +507,11 @@ void Interpreter::visitClazzStmt(Class& clazzStmt) {
     }
 
     std::unordered_map<std::string, Object> clazzMethods;
-    // Class methods here
+    for (const auto& staticMethod : clazzStmt.m_StaticMethods) {
+        SharedCallablePtr callable = std::make_shared<KarolaScriptFunction>(staticMethod.get(), environment, false);
+        Object staticFunctionObject(callable);
+        clazzMethods[staticMethod->m_Name.lexeme] = staticFunctionObject;
+    }
 
     if (!superclass.isNull()) {
         //pop latest environment

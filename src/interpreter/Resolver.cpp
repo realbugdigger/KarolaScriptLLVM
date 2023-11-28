@@ -350,6 +350,14 @@ void Resolver::visitClazzStmt(Class& stmt) {
         scopes.emplace_back(backed);
     }
 
+    // Start new scope for processing static methods
+    beginScope();
+    for (const auto& staticMethod : stmt.m_StaticMethods) {
+        resolveFunction(*staticMethod, FunctionType::METHOD);
+    }
+    endScope();
+
+    // Start new scope to process instance methods
     beginScope();
     auto back = scopes.back();
     back["this"] = true;

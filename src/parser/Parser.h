@@ -533,10 +533,10 @@ private:
         consume(TOKEN_LEFT_BRACE, "Expected '{' before class body.");
 
         std::vector<std::unique_ptr<Function>> methods;
-        std::vector<std::unique_ptr<Function>> classMethods;
+        std::vector<std::unique_ptr<Function>> staticMethods;
         while (!check(TOKEN_RIGHT_BRACE) && !isAtEnd()) {
-            if (match({TOKEN_CLAZZ})) {
-                classMethods.push_back(function("method"));
+            if (match({TOKEN_STATIC})) {
+                staticMethods.push_back(function("static method"));
             } else {
                 methods.push_back(function("method"));
             }
@@ -544,7 +544,7 @@ private:
 
         consume(TOKEN_RIGHT_BRACE, "Expected '}' after class body.");
 
-        return std::make_unique<Class>(name, std::move(superclass), std::move(methods), std::move(classMethods));
+        return std::make_unique<Class>(name, std::move(superclass), std::move(methods), std::move(staticMethods));
     }
 
     UniqueStmtPtr declaration() {
