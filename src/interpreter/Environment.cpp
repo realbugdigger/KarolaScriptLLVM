@@ -43,6 +43,22 @@ Object Environment::lookup(const Token& identifier) {
     throw RuntimeError(identifier, "Undefined variable '" + identifier.lexeme + "'.");
 }
 
+Object Environment::lookup(const std::string& identifier) {
+    // Check if the current environment contains the identifier.
+    if (m_Values.find(identifier) != m_Values.end()) {
+        // If so, return the value associated with it.
+        return m_Values[identifier];
+    }
+
+    // If the identifier is not in the current environment, check the parent environment until global scope.
+    if (m_Enclosing) {
+        return m_Enclosing->lookup(identifier);
+    }
+
+    // If not in global scope, throw error.
+    throw RuntimeError("Undefined variable '" + identifier + "'.");
+}
+
 Object Environment::getAt(int distance, const std::string& identifier) {
     return ancestor(distance)->m_Values[identifier];
 }

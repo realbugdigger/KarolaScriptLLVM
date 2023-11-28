@@ -347,13 +347,14 @@ Object Interpreter::visitThisExpr(This& expr) {
 }
 
 Object Interpreter::visitSuperExpr(Super& expr) {
-    int distance = localsDistances[&expr]; // distance from current env to env where the superclass is stored
+//    int distance = localsDistances[&expr]; // distance from current env to env where the superclass is stored
     // Get the superclass object and cast it to KarolaScriptClass
-    Object superclassObject = environment->getAt(distance, "super");
+//    Object superclassObject = environment->getAt(distance, "super");
+    Object superclassObject = environment->lookup("super");
     KarolaScriptClass* superclass = dynamic_cast<KarolaScriptClass*>(superclassObject.getCallable().get());
 
     // "this" is always one level nearer than "super"'s environment.
-    Object instanceObject = environment->getAt(distance - 1, "this");
+    Object instanceObject = environment->lookup("this");
 
     std::optional<Object> methodObj = superclass->findMethod(expr.m_Method.lexeme);
     if (!methodObj.has_value()){
@@ -484,7 +485,7 @@ void Interpreter::visitClazzStmt(Class& clazzStmt) {
     Object superclass = Object::Null();
     if (clazzStmt.m_Superclass.has_value()) {
         superclass = evaluate(clazzStmt.m_Superclass.value().get());
-        if (!superclass.isCallable() || superclass.getCallable()->m_Type == KarolaScriptCallable::CallableType::CLASS) {
+        if (!superclass.isCallable() || superclass.getCallable()->m_Type != KarolaScriptCallable::CallableType::CLASS) {
             throw RuntimeError(clazzStmt.m_Superclass->get()->m_VariableName, "Superclass must be a class.");
         }
     }

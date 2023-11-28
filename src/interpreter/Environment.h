@@ -21,6 +21,7 @@ public:
 
     // `lookup()` can be renamed to `get()`
     Object lookup(const Token& identifier);
+    Object lookup(const std::string& identifier);
     Object getAt(int distance, const std::string& identifier);
 
     void assign(const Token& identifier, const Object& value);

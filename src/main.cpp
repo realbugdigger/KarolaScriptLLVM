@@ -109,7 +109,7 @@ int main(int argc, const char* argv[]) {
 //        runFile(argv[1]);
 //        runFile("/home/marko/compilers/KarolaScript/src/resources/code1.ks");
 //        runFile("/home/marko/compilers/KarolaScript/src/resources/code2.ks");
-//        runFile("/home/marko/compilers/KarolaScript/src/resources/code3.ks");
+        runFile("/home/marko/compilers/KarolaScript/src/resources/code3.ks");
 //        runFile("/home/marko/compilers/KarolaScript/src/resources/code4.ks");
 //        runFile("/home/marko/compilers/KarolaScript/src/resources/code5.ks");
 //        runFile("/home/marko/compilers/KarolaScript/src/resources/code6.ks");
