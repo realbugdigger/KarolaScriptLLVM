@@ -8,7 +8,7 @@
 #include "../lexer/Token.h"
 #include "Expr.h"
 #include "Stmt.h"
-#include "../ErrorReporter.h"
+#include "../util/ErrorReporter.h"
 
 bool hadParseError = false;
 
@@ -166,7 +166,7 @@ private:
 
         if (match({TOKEN_QUESTION_MARK})) {
             UniqueExprPtr trueExpr = equality();
-            consume(TOKEN_COLON, "Expect ':' after ? in ternary operator.");
+            consume(TOKEN_COLON, "Expected ':' after ? in ternary operator.");
             UniqueExprPtr falseExpr = ternaryExpression();
             expr = std::make_unique<Ternary>(std::move(expr), std::move(trueExpr), std::move(falseExpr));
         }
@@ -255,7 +255,7 @@ private:
             } while (match({ TOKEN_COMMA }));
         }
 
-        Token closingParen = consume(TOKEN_RIGHT_PAREN, "Expect ')' after arguments.");
+        Token closingParen = consume(TOKEN_RIGHT_PAREN, "Expected ')' after arguments.");
 
         return std::make_unique<Call>(std::move(callee), closingParen, std::move(arguments));
     }
@@ -267,7 +267,7 @@ private:
             if (match({ TOKEN_LEFT_PAREN })) {
                 expr = finishCall(std::move(expr));
             } else if (match({ TOKEN_DOT })) {
-                Token name = consume(TOKEN_IDENTIFIER, "Expect property name after '.'.");
+                Token name = consume(TOKEN_IDENTIFIER, "Expected property name after '.'.");
                 expr = std::make_unique<Get>(name, std::move(expr));
             } else {
                 break;
@@ -277,7 +277,7 @@ private:
     }
 
     UniqueExprPtr anonymousFunction() {
-        consume(TOKEN_LEFT_PAREN, "Expect '(' after 'funct'.");
+        consume(TOKEN_LEFT_PAREN, "Expected '(' after 'funct'.");
         std::vector<Token> parameters;
         if (!check(TOKEN_RIGHT_PAREN)) {
             do {
@@ -285,11 +285,11 @@ private:
                     error(peek(), "Can't have more than 255 parameters.");
                 }
 
-                parameters.push_back(consume(TOKEN_IDENTIFIER, "Expect parameter name."));
+                parameters.push_back(consume(TOKEN_IDENTIFIER, "Expected parameter name."));
             } while (match({TOKEN_COMMA}));
         }
         Token errorToken = consume(TOKEN_RIGHT_PAREN, "Expect ')' after parameters.");
-        consume(TOKEN_LEFT_BRACE, "Expect '{' before fun body.");
+        consume(TOKEN_LEFT_BRACE, "Expected '{' before fun body.");
         std::vector<UniqueStmtPtr> body = block();
 
         if (body.empty())
@@ -320,8 +320,8 @@ private:
 
         if (match({ TOKEN_SUPER })) {
             Token keyword = previous();
-            consume(TOKEN_DOT, "Expect '.' after 'super'.");
-            Token method = consume(TOKEN_IDENTIFIER,"Expect identifier method super.");
+            consume(TOKEN_DOT, "Expected '.' after 'super'.");
+            Token method = consume(TOKEN_IDENTIFIER,"Expected identifier method super.");
             return std::make_unique<Super>(keyword, method);
         }
 
@@ -335,15 +335,15 @@ private:
 
         if (match({ TOKEN_LEFT_PAREN })) {
             UniqueExprPtr expr = expression();
-            consume(TOKEN_RIGHT_PAREN, "Expect ')' after expression.");
+            consume(TOKEN_RIGHT_PAREN, "Expected ')' after expression.");
             return std::make_unique<Grouping>(std::move(expr));
         }
 
-        throw error(peek(), "Expect expression.");
+        throw error(peek(), "Expected expression.");
     }
 
     UniqueStmtPtr forStatement() {
-        consume(TOKEN_LEFT_PAREN, "Expect '(' after 'for'.");
+        consume(TOKEN_LEFT_PAREN, "Expected '(' after 'for'.");
 
         // declaring or initializing variable
         UniqueStmtPtr initializer;
@@ -360,14 +360,14 @@ private:
         if (!check(TOKEN_SEMICOLON)) {
             condition = expression();
         }
-        consume(TOKEN_SEMICOLON, "Expect ';' after loop condition.");
+        consume(TOKEN_SEMICOLON, "Expected ';' after loop condition.");
 
         // the incrementation
         UniqueExprPtr increment = nullptr;
         if (!check(TOKEN_RIGHT_PAREN)) {
             increment = expression();
         }
-        consume(TOKEN_RIGHT_PAREN, "Expect ')' after for clauses.");
+        consume(TOKEN_RIGHT_PAREN, "Expected ')' after for clauses.");
 
         UniqueStmtPtr body = statement();
 
@@ -394,9 +394,9 @@ private:
     }
 
     UniqueStmtPtr ifStatement() {
-        consume(TOKEN_LEFT_PAREN, "Expect '(' after 'if'.");
+        consume(TOKEN_LEFT_PAREN, "Expected '(' after 'if'.");
         UniqueExprPtr condition = expression();
-        consume(TOKEN_RIGHT_PAREN, "Expect ')' after if condition.");
+        consume(TOKEN_RIGHT_PAREN, "Expected ')' after if condition.");
 
         UniqueStmtPtr thenBranch = statement();
         UniqueStmtPtr elseBranch = nullptr;
@@ -413,7 +413,7 @@ private:
         }
 
         UniqueExprPtr value = expression();
-        consume(TOKEN_SEMICOLON, "Expect ';' after value.");
+        consume(TOKEN_SEMICOLON, "Expected ';' after value.");
         UniqueStmtPtr print = std::make_unique<Print>(std::move(value));
         return print;
     }
@@ -425,14 +425,14 @@ private:
             value = expression();
         }
 
-        consume(TOKEN_SEMICOLON, "Expect ';' after return value.");
+        consume(TOKEN_SEMICOLON, "Expected ';' after return value.");
         return std::make_unique<Return>(keyword, std::move(value));
     }
 
     UniqueStmtPtr whileStatement() {
-        consume(TOKEN_LEFT_PAREN, "Expect '(' after 'while'.");
+        consume(TOKEN_LEFT_PAREN, "Expected '(' after 'while'.");
         UniqueExprPtr condition = expression();
-        consume(TOKEN_RIGHT_PAREN, "Expect ')' after condition.");
+        consume(TOKEN_RIGHT_PAREN, "Expected ')' after condition.");
         UniqueStmtPtr body = statement();
 
         return std::make_unique<While>(std::move(condition), std::move(body));
@@ -441,7 +441,7 @@ private:
     UniqueStmtPtr breakStatement() {
         Token keyword = previous();
 
-        consume(TOKEN_SEMICOLON, "Expect ';' after 'break'.");
+        consume(TOKEN_SEMICOLON, "Expected ';' after 'break'.");
         return std::make_unique<Break>(keyword);
     }
 
@@ -452,13 +452,13 @@ private:
             statements.push_back(declaration());
         }
 
-        consume(TOKEN_RIGHT_BRACE, "Expect '}' after block.");
+        consume(TOKEN_RIGHT_BRACE, "Expected '}' after block.");
         return statements;
     }
 
     UniqueStmtPtr expressionStatement() {
         UniqueExprPtr expr = expression();
-        consume(TOKEN_SEMICOLON, "Expect ';' after expression.");
+        consume(TOKEN_SEMICOLON, "Expected ';' after expression.");
         UniqueStmtPtr expression = std::make_unique<Expression>(std::move(expr));
         return expression;
     }
@@ -489,20 +489,20 @@ private:
     }
 
     UniqueStmtPtr letDeclaration() {
-        Token name = consume(TOKEN_IDENTIFIER, "Expect variable identifier.");
+        Token name = consume(TOKEN_IDENTIFIER, "Expected variable identifier.");
         std::optional<UniqueExprPtr> initializer = std::nullopt;
         if (match( {TOKEN_EQUAL} )) {
             initializer = expression();
         }
 
-        consume(TOKEN_SEMICOLON, "Expect ';' after variable declaration.");
+        consume(TOKEN_SEMICOLON, "Expected ';' after variable declaration.");
         UniqueStmtPtr var = std::make_unique<Let>(name, std::move(initializer));
         return var;
     }
 
     std::unique_ptr<Function> function(const std::string& kind) {
-        Token name = consume(TOKEN_IDENTIFIER, "Expect " + kind + " name.");
-        consume(TOKEN_LEFT_PAREN, "Expect '(' after " + kind + " name.");
+        Token name = consume(TOKEN_IDENTIFIER, "Expected " + kind + " name.");
+        consume(TOKEN_LEFT_PAREN, "Expected '(' after " + kind + " name.");
 
         std::vector<Token> parameters;
         if (!check(TOKEN_RIGHT_PAREN)) {
@@ -510,12 +510,12 @@ private:
                 if (parameters.size() >= 255) {
                     error(peek(), "Cannot have more than 255 parameters.");
                 }
-                parameters.push_back(consume(TOKEN_IDENTIFIER, "Expect parameter name."));
+                parameters.push_back(consume(TOKEN_IDENTIFIER, "Expected parameter name."));
             } while (match({ TOKEN_COMMA }));
         }
 
-        consume(TOKEN_RIGHT_PAREN, "Expect ')' after parameters.");
-        consume(TOKEN_LEFT_BRACE, "Expect '{' before " + kind + " body.");
+        consume(TOKEN_RIGHT_PAREN, "Expected ')' after parameters.");
+        consume(TOKEN_LEFT_BRACE, "Expected '{' before " + kind + " body.");
 
         std::vector<UniqueStmtPtr> body = block();
         return std::make_unique<Function>(name, parameters, std::move(body));
@@ -562,7 +562,6 @@ private:
         catch (ParseError&)
         {
             //Report the exception but don't let it bubble up and stop the program. Instead, synchronize the parser and keep parsing.
-//            std::cout << error.what() << "\n";
             hadParseError = true;
             synchronize();
             return nullptr;

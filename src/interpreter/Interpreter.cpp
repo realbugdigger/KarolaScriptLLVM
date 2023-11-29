@@ -9,7 +9,7 @@
 
 #include "KarolaScriptClass.h"
 #include "RuntimeError.h"
-#include "../ErrorReporter.h"
+#include "../util/ErrorReporter.h"
 #include "KarolaScriptFunction.h"
 #include "KarolaScriptCallable.h"
 #include "../util/Utils.h"

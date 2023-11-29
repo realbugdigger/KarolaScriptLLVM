@@ -3,7 +3,7 @@
 #include <iostream>
 
 #include "RuntimeError.h"
-#include "../ErrorReporter.h"
+#include "../util/ErrorReporter.h"
 #include "../lexer/Token.h"
 #include "Interpreter.h"
 

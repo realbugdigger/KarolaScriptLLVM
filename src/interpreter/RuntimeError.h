@@ -18,9 +18,9 @@ public:
             : std::runtime_error{message}, token{token}
     {
         if (line != -1){
-            this->message = "[Line " + std::to_string(line) + "] " +  "Runtime Error: " + message;
+            this->message = "[Line " + std::to_string(line) + "] " + message;
         } else {
-            this->message = "Runtime Error: " + message;
+            this->message = "" + message;
         }
     }
 
@@ -28,7 +28,7 @@ public:
             : std::runtime_error{message}, token{token}
     {
         if (line != -1){
-            this->message = "[Line " + std::to_string(line) + "] " +  "Runtime Error: " + message;
+            this->message = "[Line " + std::to_string(line) + "] " + message;
         } else {
             this->message = message;
         }

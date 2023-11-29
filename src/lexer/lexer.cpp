@@ -1,6 +1,6 @@
 #include <cstring>
 
-#include "../ErrorReporter.h"
+#include "../util/ErrorReporter.h"
 #include "lexer.h"
 
 typedef struct {
