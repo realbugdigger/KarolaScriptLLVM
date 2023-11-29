@@ -31,8 +31,6 @@ static void run(const char* program) {
     try {
         interpreter.interpret(statements);
     } catch (const RuntimeError &exception) {
-//        std::cout << exception.what() << "\n";
-//        return 70;
     }
 
     free(parser);

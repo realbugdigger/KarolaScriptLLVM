@@ -110,5 +110,4 @@ std::string KarolaScriptInstance::toString() {
     std::stringstream ss;
     ss << "<Instance of class " << m_Klass->name() << " at " << this << ">";
     return ss.str();
-//        return m_Klass.m_ClassName + " instance";
 }

@@ -8,8 +8,6 @@
 
 #include "KarolaScriptCallable.h"
 #include "../util/Object.h"
-//#include "../parser/Stmt.h"
-//#include "../parser/Expr.h"
 
 class Interpreter;
 struct Token;

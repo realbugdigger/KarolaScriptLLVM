@@ -41,7 +41,7 @@ private:
 public:
     Interpreter();
 
-    /*This function unpacks every UniqueStmtPtr into a raw pointer and then executes it. This is because the Interpreter does not
+    /* This function unpacks every UniqueStmtPtr into a raw pointer and then executes it. This is because the Interpreter does not
      * own the dynamically allocated statement objects, it only operates on them, so it should use raw pointers instead of a
      * smart pointer to signal that it does not own and has no influence over the lifetime of the objects.
      * */

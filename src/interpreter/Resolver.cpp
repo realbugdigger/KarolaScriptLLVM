@@ -25,16 +25,6 @@ void Resolver::resolve(Expr* expr) {
 }
 
 void Resolver::resolveLocal(const Expr& expr, const Token &identifier) {
-//    for (int i = scopes.size() - 1; i >= 0; i--){
-//        if (scopes[i].find(name.lexeme) != scopes[i].end()){
-//            distances[expr] = scopes.size() - i - 1; //number of hops when resolving variable
-//            return;
-//        }
-//    }
-
-    //If it is not found we assume the variable was global
-
-
     if (scopes.empty())
         return;
 
@@ -45,7 +35,6 @@ void Resolver::resolveLocal(const Expr& expr, const Token &identifier) {
         // If variable is found, then we resolve it.
         if (scope->find(identifier.lexeme) != scope->end())
         {
-//                m_Interpreter.resolve(expr, scopes.size() - 1 - i);
 //            distances[&expr] = scopes.size() - i - 1; //number of hops when resolving variable // remove this line and keep next ????
             m_Interpreter.resolve(const_cast<Expr *>(&expr), std::distance(scopes.rbegin(), scope));
             return;

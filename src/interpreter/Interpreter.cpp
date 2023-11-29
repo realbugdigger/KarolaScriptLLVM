@@ -112,13 +112,6 @@ std::string Interpreter::stringify(const Object& object) {
     if (object.isNull())
         return "null";
 
-//    auto text = std::any_cast<std::string>(object);
-//    std::string check_str = ".000000";
-//    if (endsWith(text, check_str)) {
-//        return text.erase(text.size() - check_str.size());
-//    }
-//    return text;
-
     switch (object.type) {
         case ObjType::OBJTYPE_NULL:
             return "null";
@@ -238,11 +231,6 @@ Object Interpreter::visitAnonFunctionExpr(AnonFunction& expr) {
     SharedCallablePtr anonFunction = std::make_shared<KarolaScriptAnonFunction>(&expr, environment);
     Object anonFunctionObject(anonFunction);
     return anonFunctionObject;
-//    environment->define(expr.m_Name.lexeme, functionObject);
-
-//        Stmt.Function stmt = new Stmt.Function(null, expr.params, expr.body);
-//        LoxFunction function = new LoxFunction(stmt, environment);
-//    return Object::Null();
 }
 
 Object Interpreter::visitGetExpr(Get& expr) {
@@ -263,7 +251,6 @@ Object Interpreter::visitGetExpr(Get& expr) {
 Object Interpreter::visitAssignExpr(Assign& expr) {
     Object value = evaluate(expr.m_Value.get());
 
-    // environment->assign(expr->m_Name, m_Value);
     auto distance = localsDistances.find(&expr);
     if (distance != localsDistances.end()) {
         environment->assignAt(distance->second, expr.m_Name, value);
@@ -427,7 +414,6 @@ throw ReturnException(value);
 
 void Interpreter::visitBreakStmt(Break& stmt) {
     throw BreakException(stmt.m_Keyword);
-    //        throw BreakError(stmt.m_Keyword);
 }
 
 void Interpreter::visitLetStmt(Let& stmt) {
@@ -524,7 +510,6 @@ void Interpreter::visitClazzStmt(Class& clazzStmt) {
         environment = environment->m_Enclosing;
     }
 
-//    SharedCallablePtr klass = std::make_shared<KarolaScriptClass>(clazzStmt.m_Name.lexeme, superclassPtr, methods, staticMethods);
     SharedCallablePtr klass(KarolaScriptMetaClass::createClass(clazzStmt.m_Name.lexeme, superclassPtr, methods, staticMethods));
     Object classObject(klass);
     environment->assign(clazzStmt.m_Name, classObject);
