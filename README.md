@@ -115,9 +115,9 @@ Currently supported features:
 - Parser has ability to print out warning to a console if some variable was declared in certain scope but was never used or accessed (in inner or same level scope) !
 - Parser will also report if some anonymous function was passed but never used
 
-### Grammar
+### Std lib
 
-Grammar goes here
+### Metaclasses
 
 ### Licence
 
