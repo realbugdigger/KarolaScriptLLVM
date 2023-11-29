@@ -16,8 +16,12 @@ KarolaScriptClass::KarolaScriptClass(const std::string& name_,
                                     const std::unordered_map<std::string, Object>& staticMethods_
                                     ) : KarolaScriptCallable(CallableType::CLASS), m_ClassName(name_), m_Superclass(superclass_), m_Methods(methods_), m_StaticMethods(staticMethods_)
 {
-    if (m_Superclass.has_value() && m_Superclass->get()->m_Type != CallableType::CLASS)
-        throw std::runtime_error("Class can only inherit a class.");
+    if (name_ != "MetaClass") {
+        if (m_Superclass.has_value() && m_Superclass->get()->m_Type != CallableType::CLASS)
+            throw std::runtime_error("Class can only inherit a class.");
+
+        metaClass = &KarolaScriptMetaClass::getInstance();
+    }
 }
 
 Object KarolaScriptClass::call(Interpreter& interpreter, const std::vector<Object>& arguments) {
@@ -50,24 +54,6 @@ std::optional<Object> KarolaScriptClass::findMethod(const std::string& name) {
 
     return std::nullopt;
 }
-
-//std::optional<Object> KarolaScriptClass::findMethod(KarolaScriptInstance& instance, const std::string& name) {
-//    if (m_Methods.find(name) != m_Methods.end()) {
-//        Object method = m_Methods[name];
-//        KarolaScriptFunction *function = dynamic_cast<KarolaScriptFunction*>(method.getCallable().get());
-//        //Create a new function where the variable "this" is binded to this instance
-//        SharedCallablePtr newFunction(function->bind(shared_from_this()));
-//        Object newFunctionObject(newFunction);
-//        return newFunctionObject;
-//    }
-//
-//    if (m_Superclass.has_value()) {
-//        auto* ksClass = dynamic_cast<KarolaScriptClass*>(m_Superclass.value().get());
-//        return ksClass->findMethod(instance, name);
-//    }
-//
-//    return std::nullopt;
-//}
 
 std::optional<Object> KarolaScriptClass::findStaticMethod(const std::string& name) {
     if (m_StaticMethods.find(name) != m_StaticMethods.end()) {
@@ -124,5 +110,4 @@ std::string KarolaScriptInstance::toString() {
     std::stringstream ss;
     ss << "<Instance of class " << m_Klass->name() << " at " << this << ">";
     return ss.str();
-//        return m_Klass.m_ClassName + " instance";
 }
