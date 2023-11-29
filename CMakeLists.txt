@@ -33,4 +33,5 @@ add_executable(KarolaScript src/main.cpp
         src/interpreter/KarolaScriptAnonFunction.h
         src/interpreter/KarolaScriptAnonFunction.cpp
         src/util/ErrorReporter.cpp
+        src/parser/Parser.cpp
 )
