@@ -247,6 +247,12 @@ Object Interpreter::visitAnonFunctionExpr(AnonFunction& expr) {
 
 Object Interpreter::visitGetExpr(Get& expr) {
     Object object = evaluate(expr.m_Object.get());
+
+    // lookup static methods within the class first before looking at instance methods
+    if (object.isCallable() && object.getCallable()->m_Type == KarolaScriptCallable::CLASS) {
+        KarolaScriptClass* clazz = dynamic_cast<KarolaScriptClass*>(object.getCallable().get());
+        return clazz->getProperty(expr.m_Name);
+    }
     if (object.isInstance()) {
         return object.getClassInstance()->getProperty(expr.m_Name);
     }

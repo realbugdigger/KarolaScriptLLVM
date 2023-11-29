@@ -13,8 +13,8 @@
 KarolaScriptClass::KarolaScriptClass(const std::string& name_,
                                     const std::optional<SharedCallablePtr> superclass_,
                                     const std::unordered_map<std::string, Object>& methods_,
-                                    const std::unordered_map<std::string, Object>& classMethods_
-                                    ) : KarolaScriptCallable(CallableType::CLASS), m_ClassName(name_), m_Superclass(superclass_), m_Methods(methods_), m_ClassMethods(classMethods_)
+                                    const std::unordered_map<std::string, Object>& staticMethods_
+                                    ) : KarolaScriptCallable(CallableType::CLASS), m_ClassName(name_), m_Superclass(superclass_), m_Methods(methods_), m_StaticMethods(staticMethods_)
 {
     if (m_Superclass.has_value() && m_Superclass->get()->m_Type != CallableType::CLASS)
         throw std::runtime_error("Class can only inherit a class.");
@@ -39,16 +39,45 @@ Object KarolaScriptClass::call(Interpreter& interpreter, const std::vector<Objec
 }
 
 std::optional<Object> KarolaScriptClass::findMethod(const std::string& name) {
-    if (m_Methods.find(name) != m_Methods.end()){
+    if (m_Methods.find(name) != m_Methods.end()) {
         return m_Methods[name];
     }
 
-    if (m_Superclass.has_value()){
+    if (m_Superclass.has_value()) {
         auto* ksClass = dynamic_cast<KarolaScriptClass*>(m_Superclass.value().get());
         return ksClass->findMethod(name);
     }
 
     return std::nullopt;
+}
+
+//std::optional<Object> KarolaScriptClass::findMethod(KarolaScriptInstance& instance, const std::string& name) {
+//    if (m_Methods.find(name) != m_Methods.end()) {
+//        Object method = m_Methods[name];
+//        KarolaScriptFunction *function = dynamic_cast<KarolaScriptFunction*>(method.getCallable().get());
+//        //Create a new function where the variable "this" is binded to this instance
+//        SharedCallablePtr newFunction(function->bind(shared_from_this()));
+//        Object newFunctionObject(newFunction);
+//        return newFunctionObject;
+//    }
+//
+//    if (m_Superclass.has_value()) {
+//        auto* ksClass = dynamic_cast<KarolaScriptClass*>(m_Superclass.value().get());
+//        return ksClass->findMethod(instance, name);
+//    }
+//
+//    return std::nullopt;
+//}
+
+std::optional<Object> KarolaScriptClass::findStaticMethod(const std::string& name) {
+    if (m_StaticMethods.find(name) != m_StaticMethods.end()) {
+            return m_StaticMethods.at(name);
+    }
+    return Object::Null();
+}
+
+Object KarolaScriptClass::getProperty(const Token& identifier) {
+    return findStaticMethod(identifier.lexeme).value();
 }
 
 int KarolaScriptClass::arity() {

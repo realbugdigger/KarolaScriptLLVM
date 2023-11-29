@@ -12,36 +12,44 @@
 class Interpreter;
 struct Token;
 
+class KarolaScriptMetaClass;
+
 class KarolaScriptClass : public KarolaScriptCallable, public std::enable_shared_from_this<KarolaScriptClass> {
 public:
     std::string m_ClassName;
     std::optional<SharedCallablePtr> m_Superclass;
     std::unordered_map<std::string, Object> m_Methods;
-    std::unordered_map<std::string, Object> m_ClassMethods;
+    std::unordered_map<std::string, Object> m_StaticMethods;
+    KarolaScriptMetaClass* metaClass;
 public:
     KarolaScriptClass(const std::string& name_,
                       const std::optional<SharedCallablePtr> superclass_,
                       const std::unordered_map<std::string, Object>& methods_,
-                      const std::unordered_map<std::string, Object>& classMethods_
+                      const std::unordered_map<std::string, Object>& staticMethods_
                       );
 
     Object call(Interpreter& interpreter, const std::vector<Object>& arguments) override;
     std::optional<Object> findMethod(const std::string& name);
+//    std::optional<Object> findMethod(KarolaScriptInstance& instance, const std::string& name);
+    std::optional<Object> findStaticMethod(const std::string& name);
+    Object getProperty(const Token& identifier);
     int arity() override;
     std::string toString() override;
     std::string name() override;
+};
 
-//    std::shared_ptr<KarolaScriptFunction> findClassMethod(const std::string& name) {
-//        if (m_StaticMethods.find(name) != m_StaticMethods.end()) {
-//            return m_StaticMethods.at(name);
-//        }
-//        return nullptr;
-//    }
+class KarolaScriptMetaClass : public KarolaScriptClass {
+private:
+    KarolaScriptMetaClass() : KarolaScriptClass("KarolaScriptClass", nullptr, {}, {}) {}
 
-//    std::any get(const Token& name) {
-//        std::shared_ptr<KarolaScriptFunction> method = findClassMethod(name.lexeme);
-//        return method;
-//    }
+public:
+    KarolaScriptMetaClass(KarolaScriptMetaClass const&) = delete;
+    void operator=(KarolaScriptMetaClass const&) = delete;
+
+    static KarolaScriptMetaClass& getInstance() {
+        static KarolaScriptMetaClass instance;
+        return instance;
+    }
 };
 
 class KarolaScriptInstance : public std::enable_shared_from_this<KarolaScriptInstance> {
@@ -50,7 +58,6 @@ private:
     std::unordered_map<std::string, Object> m_Fields;
 public:
     explicit KarolaScriptInstance(std::shared_ptr<KarolaScriptClass> klass_);
-    //    explicit KarolaScriptInstance(const std::shared_ptr<KarolaScriptClass>& klass_);
     Object getProperty(const Token& identifier);
     void setProperty(const Token& identifier, const Object& value);
     std::string toString();
