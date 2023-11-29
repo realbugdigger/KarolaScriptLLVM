@@ -17,23 +17,23 @@ program           → declaration* EOF ;
 declaration       → classDecl | funDecl | varDecl | statement ;
 
 
-classDecl         → "class" IDENTIFIER ( "<" IDENTIFIER )?
+classDecl         → "clazz" IDENTIFIER ( "<" IDENTIFIER )?
                     "{" member* "}" ;
 
 member            → classMethodDecl | methodDecl ;
 classMethodDecl   → "class" IDENTIFIER "(" parameters? ")" block ;
 methodDecl        → function ;
 
-funDecl           → "fun" function ;
+funDecl           → "funct" function ;
 
 function          → IDENTIFIER "(" parameters? ")" block ;
 parameters        → IDENTIFIER ( "," IDENTIFIER )* ;
 
-anonFunDecl       → "fun" anonFunction ;
+anonFunDecl       → "funct" anonFunction ;
 anonFunction      → "(" parameters? ")" block ;
 
 
-varDecl           → "var" IDENTIFIER ( "=" expression )? ";" ;
+varDecl           → "let" IDENTIFIER ( "=" expression )? ";" ;
 
 
 
@@ -52,7 +52,7 @@ exprStmt          → expression ";" ;
 ifStmt            → "if" "(" expression ")" statement
                   ( "else" statement )? ;
 
-printStmt         → "print" expression ";" ;
+printStmt         → "console" expression ";" ;
 block             → "{" declaration* "}" ;
 breakStmt         → "break" ";" ;
 
@@ -99,6 +99,7 @@ More optimal way would be to make a virtual machine and bytecode for the languag
 I'll add that when I have the time.
 
 Currently supported features:
+- provides REPL as well as single file interpretation
 - assign operation
 - classes
 - inheritance
