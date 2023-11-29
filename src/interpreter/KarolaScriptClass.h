@@ -8,6 +8,8 @@
 
 #include "KarolaScriptCallable.h"
 #include "../util/Object.h"
+//#include "../parser/Stmt.h"
+//#include "../parser/Expr.h"
 
 class Interpreter;
 struct Token;
@@ -30,7 +32,6 @@ public:
 
     Object call(Interpreter& interpreter, const std::vector<Object>& arguments) override;
     std::optional<Object> findMethod(const std::string& name);
-//    std::optional<Object> findMethod(KarolaScriptInstance& instance, const std::string& name);
     std::optional<Object> findStaticMethod(const std::string& name);
     Object getProperty(const Token& identifier);
     int arity() override;
@@ -40,7 +41,7 @@ public:
 
 class KarolaScriptMetaClass : public KarolaScriptClass {
 private:
-    KarolaScriptMetaClass() : KarolaScriptClass("KarolaScriptClass", nullptr, {}, {}) {}
+    KarolaScriptMetaClass() : KarolaScriptClass("MetaClass", nullptr, {}, {}) {}
 
 public:
     KarolaScriptMetaClass(KarolaScriptMetaClass const&) = delete;
@@ -49,6 +50,10 @@ public:
     static KarolaScriptMetaClass& getInstance() {
         static KarolaScriptMetaClass instance;
         return instance;
+    }
+
+    static KarolaScriptClass* createClass(const std::string& clazzName, std::optional<SharedCallablePtr> superclass, std::unordered_map<std::string, Object> methods, std::unordered_map<std::string, Object> staticMethods) {
+        return new KarolaScriptClass(clazzName, superclass, methods, staticMethods);
     }
 };
 

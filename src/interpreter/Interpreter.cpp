@@ -512,11 +512,11 @@ void Interpreter::visitClazzStmt(Class& clazzStmt) {
         methods[method->m_Name.lexeme] = functionObject;
     }
 
-    std::unordered_map<std::string, Object> clazzMethods;
+    std::unordered_map<std::string, Object> staticMethods;
     for (const auto& staticMethod : clazzStmt.m_StaticMethods) {
         SharedCallablePtr callable = std::make_shared<KarolaScriptFunction>(staticMethod.get(), environment, false);
         Object staticFunctionObject(callable);
-        clazzMethods[staticMethod->m_Name.lexeme] = staticFunctionObject;
+        staticMethods[staticMethod->m_Name.lexeme] = staticFunctionObject;
     }
 
     if (!superclass.isNull()) {
@@ -524,7 +524,8 @@ void Interpreter::visitClazzStmt(Class& clazzStmt) {
         environment = environment->m_Enclosing;
     }
 
-    SharedCallablePtr klass = std::make_shared<KarolaScriptClass>(clazzStmt.m_Name.lexeme, superclassPtr, methods, clazzMethods);
+//    SharedCallablePtr klass = std::make_shared<KarolaScriptClass>(clazzStmt.m_Name.lexeme, superclassPtr, methods, staticMethods);
+    SharedCallablePtr klass(KarolaScriptMetaClass::createClass(clazzStmt.m_Name.lexeme, superclassPtr, methods, staticMethods));
     Object classObject(klass);
     environment->assign(clazzStmt.m_Name, classObject);
 }

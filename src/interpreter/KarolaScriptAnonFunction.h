@@ -18,12 +18,8 @@ public:
 public:
     KarolaScriptAnonFunction(const AnonFunction* declaration_, std::shared_ptr<Environment> closure_);
 
-    // params should be passed and declared inside executeBlock() method, this shouldn't happen probably
-    // funct scope(a) {
-    //      var a = "local";
-    // }
     Object call(Interpreter& interpreter, const std::vector<Object>& arguments) override;
     int arity() override;
-    std::string toString() override {}
-    std::string name() override {}
+    std::string toString() override {return "";}
+    std::string name() override {return "";}
 };

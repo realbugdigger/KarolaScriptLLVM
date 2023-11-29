@@ -113,7 +113,7 @@ int main(int argc, const char* argv[]) {
 //        runFile("/home/marko/compilers/KarolaScript/src/resources/code4.ks");
 //        runFile("/home/marko/compilers/KarolaScript/src/resources/code5.ks");
 //        runFile("/home/marko/compilers/KarolaScript/src/resources/code6.ks");
-        runFile("/home/marko/compilers/KarolaScript/src/resources/code7.ks");
+//        runFile("/home/marko/compilers/KarolaScript/src/resources/code7.ks");
     } else {
         fprintf(stderr, "Usage: ks [filePath]\n");
         exit(64);
