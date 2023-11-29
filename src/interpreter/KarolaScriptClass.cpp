@@ -13,11 +13,15 @@
 KarolaScriptClass::KarolaScriptClass(const std::string& name_,
                                     const std::optional<SharedCallablePtr> superclass_,
                                     const std::unordered_map<std::string, Object>& methods_,
-                                    const std::unordered_map<std::string, Object>& classMethods_
-                                    ) : KarolaScriptCallable(CallableType::CLASS), m_ClassName(name_), m_Superclass(superclass_), m_Methods(methods_), m_ClassMethods(classMethods_)
+                                    const std::unordered_map<std::string, Object>& staticMethods_
+                                    ) : KarolaScriptCallable(CallableType::CLASS), m_ClassName(name_), m_Superclass(superclass_), m_Methods(methods_), m_StaticMethods(staticMethods_)
 {
-    if (m_Superclass.has_value() && m_Superclass->get()->m_Type != CallableType::CLASS)
-        throw std::runtime_error("Class can only inherit a class.");
+    if (name_ != "MetaClass") {
+        if (m_Superclass.has_value() && m_Superclass->get()->m_Type != CallableType::CLASS)
+            throw std::runtime_error("Class can only inherit a class.");
+
+        metaClass = &KarolaScriptMetaClass::getInstance();
+    }
 }
 
 Object KarolaScriptClass::call(Interpreter& interpreter, const std::vector<Object>& arguments) {
@@ -39,16 +43,27 @@ Object KarolaScriptClass::call(Interpreter& interpreter, const std::vector<Objec
 }
 
 std::optional<Object> KarolaScriptClass::findMethod(const std::string& name) {
-    if (m_Methods.find(name) != m_Methods.end()){
+    if (m_Methods.find(name) != m_Methods.end()) {
         return m_Methods[name];
     }
 
-    if (m_Superclass.has_value()){
+    if (m_Superclass.has_value()) {
         auto* ksClass = dynamic_cast<KarolaScriptClass*>(m_Superclass.value().get());
         return ksClass->findMethod(name);
     }
 
     return std::nullopt;
+}
+
+std::optional<Object> KarolaScriptClass::findStaticMethod(const std::string& name) {
+    if (m_StaticMethods.find(name) != m_StaticMethods.end()) {
+            return m_StaticMethods.at(name);
+    }
+    return Object::Null();
+}
+
+Object KarolaScriptClass::getProperty(const Token& identifier) {
+    return findStaticMethod(identifier.lexeme).value();
 }
 
 int KarolaScriptClass::arity() {
@@ -95,5 +110,4 @@ std::string KarolaScriptInstance::toString() {
     std::stringstream ss;
     ss << "<Instance of class " << m_Klass->name() << " at " << this << ">";
     return ss.str();
-//        return m_Klass.m_ClassName + " instance";
 }

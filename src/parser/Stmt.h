@@ -59,10 +59,10 @@ public:
     Token m_Name;
     std::optional<std::unique_ptr<Variable>> m_Superclass; //Superclass is a Variable expression instead of a Token because the resolver needs to resolve the superclass and it needs an expr to do so.
     std::vector<std::unique_ptr<Function>> m_Methods;
-    std::vector<std::unique_ptr<Function>> m_ClassMethods;
+    std::vector<std::unique_ptr<Function>> m_StaticMethods;
 
-    Class(const Token& name, std::optional<std::unique_ptr<Variable>> superclass, std::vector<std::unique_ptr<Function>> methods, std::vector<std::unique_ptr<Function>> classMethods)
-            : m_Name(name), m_Superclass(std::move(superclass)), m_Methods(std::move(methods)), m_ClassMethods(std::move(classMethods)) {
+    Class(const Token& name, std::optional<std::unique_ptr<Variable>> superclass, std::vector<std::unique_ptr<Function>> methods, std::vector<std::unique_ptr<Function>> staticMethods)
+            : m_Name(name), m_Superclass(std::move(superclass)), m_Methods(std::move(methods)), m_StaticMethods(std::move(staticMethods)) {
     }
 
     void accept(StmtVisitor& visitor) override {

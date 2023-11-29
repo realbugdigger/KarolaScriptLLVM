@@ -153,7 +153,14 @@ static TokenType identifierType() {
         case 'o': return checkKeyword(1, 1, "r", TOKEN_OR);
         case 'k': return checkKeyword(1, 6, "onsole", TOKEN_KONSOLE);
         case 'r': return checkKeyword(1, 5, "eturn", TOKEN_RETURN);
-        case 's': return checkKeyword(1, 4, "uper", TOKEN_SUPER);
+        case 's':
+            if (lexeme.current - lexeme.start > 1) {
+                switch (lexeme.start[1]) {
+                    case 'u': return checkKeyword(2, 3, "per", TOKEN_SUPER);
+                    case 't': return checkKeyword(2, 4, "atic", TOKEN_STATIC);
+                }
+            }
+            break;
         case 't': return checkKeyword(1, 3, "rue", TOKEN_TRUE);
         case 'l': return checkKeyword(1, 2, "et", TOKEN_LET);
         case 'w': return checkKeyword(1, 4, "hile", TOKEN_WHILE);
