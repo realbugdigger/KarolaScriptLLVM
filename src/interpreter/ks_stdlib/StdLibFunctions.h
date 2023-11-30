@@ -35,4 +35,22 @@ namespace stdlibFunctions {
         std::string toString() override;
         std::string name() override;
     };
+
+    class ToUpper : public KarolaScriptCallable {
+    public:
+        ToUpper();
+        Object call(Interpreter &interpreter, const std::vector<Object> &arguments) override;
+        int arity() override;
+        std::string toString() override;
+        std::string name() override;
+    };
+
+    class ToLower : public KarolaScriptCallable {
+    public:
+        ToLower();
+        Object call(Interpreter &interpreter, const std::vector<Object> &arguments) override;
+        int arity() override;
+        std::string toString() override;
+        std::string name() override;
+    };
 }

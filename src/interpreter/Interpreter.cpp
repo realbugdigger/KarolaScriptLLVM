@@ -143,8 +143,10 @@ void Interpreter::loadNativeFunctions() {
     SharedCallablePtr clock = std::make_shared<stdlibFunctions::Clock>();
     SharedCallablePtr sleep = std::make_shared<stdlibFunctions::Sleep>();
     SharedCallablePtr input = std::make_shared<stdlibFunctions::Input>();
+    SharedCallablePtr toUpper = std::make_shared<stdlibFunctions::ToUpper>();
+    SharedCallablePtr toLower = std::make_shared<stdlibFunctions::ToLower>();
 
-    std::vector<Object> functions = {Object(clock), Object(sleep), Object(input)};
+    std::vector<Object> functions = {Object(clock), Object(sleep), Object(input), Object(toUpper), Object(toLower)};
     for (const auto &function : functions) {
         globals->define(function.getCallable()->name(), function);
     }

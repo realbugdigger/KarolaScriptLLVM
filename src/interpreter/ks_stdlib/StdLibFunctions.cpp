@@ -1,6 +1,9 @@
 #include "StdLibFunctions.h"
 #include <chrono>
 #include <iostream>
+#include <algorithm>
+#include <cctype>
+#include <string>
 #include <memory>
 #include <stdexcept>
 #include <thread>
@@ -15,6 +18,7 @@ stdlibFunctions::Clock::Clock() : KarolaScriptCallable(CallableType::FUNCTION) {
 Object stdlibFunctions::Clock::call(Interpreter &interpreter, const std::vector<Object> &arguments) {
     using namespace std::chrono;
     double ms = duration_cast<milliseconds>(system_clock::now().time_since_epoch()).count();
+    std::cout << ms << std::endl;
     return Object(ms);
 }
 
@@ -75,4 +79,75 @@ std::string stdlibFunctions::Input::toString() {
 
 std::string stdlibFunctions::Input::name() {
     return "input";
+}
+
+stdlibFunctions::ToUpper::ToUpper() : KarolaScriptCallable(CallableType::FUNCTION) {}
+
+Object stdlibFunctions::ToUpper::call(Interpreter &interpreter, const std::vector<Object> &arguments) {
+    if (arguments.size() != 1)
+        throw RuntimeError("toUpper should contain only one argument.");
+
+    if (!arguments[0].isString())
+        throw RuntimeError("toLower argument should be a string.");
+
+    std::string s = arguments[0].getString();
+
+    for (char& c : s) {
+        c = std::toupper(c);
+    }
+    
+//    std::transform(s.begin(), s.end(), s.begin(),
+//                   [](unsigned char c){ return std::toupper(c); }
+//    );
+//    return Object::Null();
+//    return arguments[0];
+    return Object(s);
+}
+
+int stdlibFunctions::ToUpper::arity() {
+    return 1;
+}
+
+std::string stdlibFunctions::ToUpper::toString() {
+    return "<native function " + name() + ">";
+}
+
+std::string stdlibFunctions::ToUpper::name() {
+    return "toUpper";
+}
+
+stdlibFunctions::ToLower::ToLower() : KarolaScriptCallable(CallableType::FUNCTION) {}
+
+Object stdlibFunctions::ToLower::call(Interpreter &interpreter, const std::vector<Object> &arguments) {
+    if (arguments.size() != 1)
+        throw RuntimeError("toLower should contain only one argument.");
+
+    if (!arguments[0].isString())
+        throw RuntimeError("toLower argument should be a string.");
+
+    std::string s = arguments[0].getString();
+
+    for (char& c : s) {
+        c = std::tolower(c);
+    }
+
+//    std::transform(s.begin(), s.end(), s.begin(),
+//                   [](unsigned char c){ return std::tolower(c); }
+//    );
+    //return Object(input);
+//    return Object::Null();
+//    return arguments[0];
+    return Object(s);
+}
+
+int stdlibFunctions::ToLower::arity() {
+    return 1;
+}
+
+std::string stdlibFunctions::ToLower::toString() {
+    return "<native function " + name() + ">";
+}
+
+std::string stdlibFunctions::ToLower::name() {
+    return "toLower";
 }
