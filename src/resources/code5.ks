@@ -5,6 +5,6 @@ funct thrice(fn) {
 }
 
 thrice(funct (a) {
-  konsole a;
-  konsole "Bug Digger is the best hacker!!!";
+  console a;
+  console "Bug Digger is the best hacker!!!";
 });

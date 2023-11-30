@@ -265,5 +265,6 @@ std::vector<Token> scanTokens() {
         tokens.push_back(scanToken());
     }
 
+    tokens.push_back({TOKEN_EOF});
     return tokens;
 }
