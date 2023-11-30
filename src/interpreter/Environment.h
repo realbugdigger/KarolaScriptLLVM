@@ -25,6 +25,7 @@ public:
     Object getAt(int distance, const std::string& identifier);
 
     void assign(const Token& identifier, const Object& value);
+    void assign(const std::string& identifier, const Object& value);
     void assignAt(int distance, const Token& identifier, const Object& value);
 
     Environment* ancestor(int distance);

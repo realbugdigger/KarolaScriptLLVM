@@ -77,6 +77,20 @@ void Environment::assign(const Token& identifier, const Object& value) {
     throw RuntimeError(identifier, "Undefined variable '" + identifier.lexeme + "'.");
 }
 
+void Environment::assign(const std::string& identifier, const Object& value) {
+    if (m_Values.find(identifier) != m_Values.end()) {
+        m_Values[identifier] = value;
+        return;
+    }
+
+    if (m_Enclosing) {
+        m_Enclosing->assign(identifier, value);
+        return;
+    }
+
+    throw RuntimeError("Undefined variable '" + identifier + "'.");
+}
+
 void Environment::assignAt(int distance, const Token& identifier, const Object& value) {
     ancestor(distance)->m_Values[identifier.lexeme] = value;
 }

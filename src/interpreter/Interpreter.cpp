@@ -150,6 +150,19 @@ void Interpreter::loadNativeFunctions() {
     for (const auto &function : functions) {
         globals->define(function.getCallable()->name(), function);
     }
+
+    /**
+     * Math clazz
+     */
+    SharedCallablePtr pwr = std::make_shared<stdlibFunctions::Power>();
+    SharedCallablePtr sqrr00t = std::make_shared<stdlibFunctions::SqrRoot>();
+
+    std::unordered_map<std::string, Object> staticMethods;
+    staticMethods["pwr"] = Object(pwr);
+    staticMethods["sqrr00t"] = Object(sqrr00t);
+    SharedCallablePtr mathClazz(KarolaScriptMetaClass::createClass("Math", nullptr, {}, staticMethods));
+    Object classObject(mathClazz);
+    environment->define("Math", classObject);
 }
 
 Object Interpreter::lookupVariable(const Token& identifier, const Expr* variableExpr) {

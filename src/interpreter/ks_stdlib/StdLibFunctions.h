@@ -53,4 +53,25 @@ namespace stdlibFunctions {
         std::string toString() override;
         std::string name() override;
     };
+
+
+    // static methods of Math clazz
+
+    class Power : public KarolaScriptCallable {
+    public:
+        Power();
+        Object call(Interpreter &interpreter, const std::vector<Object> &arguments) override;
+        int arity() override;
+        std::string toString() override;
+        std::string name() override;
+    };
+
+    class SqrRoot : public KarolaScriptCallable {
+    public:
+        SqrRoot();
+        Object call(Interpreter &interpreter, const std::vector<Object> &arguments) override;
+        int arity() override;
+        std::string toString() override;
+        std::string name() override;
+    };
 }

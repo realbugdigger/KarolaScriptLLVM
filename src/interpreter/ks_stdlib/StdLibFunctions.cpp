@@ -1,6 +1,7 @@
 #include "StdLibFunctions.h"
 #include <chrono>
 #include <iostream>
+#include <math.h>
 #include <algorithm>
 #include <cctype>
 #include <string>
@@ -66,7 +67,6 @@ Object stdlibFunctions::Input::call(Interpreter &interpreter, const std::vector<
     std::string input;
     std::getline(std::cin, input);
     return Object(input);
-//    return Object::Null();
 }
 
 int stdlibFunctions::Input::arity() {
@@ -84,9 +84,6 @@ std::string stdlibFunctions::Input::name() {
 stdlibFunctions::ToUpper::ToUpper() : KarolaScriptCallable(CallableType::FUNCTION) {}
 
 Object stdlibFunctions::ToUpper::call(Interpreter &interpreter, const std::vector<Object> &arguments) {
-    if (arguments.size() != 1)
-        throw RuntimeError("toUpper should contain only one argument.");
-
     if (!arguments[0].isString())
         throw RuntimeError("toLower argument should be a string.");
 
@@ -95,12 +92,7 @@ Object stdlibFunctions::ToUpper::call(Interpreter &interpreter, const std::vecto
     for (char& c : s) {
         c = std::toupper(c);
     }
-    
-//    std::transform(s.begin(), s.end(), s.begin(),
-//                   [](unsigned char c){ return std::toupper(c); }
-//    );
-//    return Object::Null();
-//    return arguments[0];
+
     return Object(s);
 }
 
@@ -119,9 +111,6 @@ std::string stdlibFunctions::ToUpper::name() {
 stdlibFunctions::ToLower::ToLower() : KarolaScriptCallable(CallableType::FUNCTION) {}
 
 Object stdlibFunctions::ToLower::call(Interpreter &interpreter, const std::vector<Object> &arguments) {
-    if (arguments.size() != 1)
-        throw RuntimeError("toLower should contain only one argument.");
-
     if (!arguments[0].isString())
         throw RuntimeError("toLower argument should be a string.");
 
@@ -131,12 +120,6 @@ Object stdlibFunctions::ToLower::call(Interpreter &interpreter, const std::vecto
         c = std::tolower(c);
     }
 
-//    std::transform(s.begin(), s.end(), s.begin(),
-//                   [](unsigned char c){ return std::tolower(c); }
-//    );
-    //return Object(input);
-//    return Object::Null();
-//    return arguments[0];
     return Object(s);
 }
 
@@ -150,4 +133,49 @@ std::string stdlibFunctions::ToLower::toString() {
 
 std::string stdlibFunctions::ToLower::name() {
     return "toLower";
+}
+
+stdlibFunctions::Power::Power() : KarolaScriptCallable(CallableType::FUNCTION) {}
+
+Object stdlibFunctions::Power::call(Interpreter &interpreter, const std::vector<Object> &arguments) {
+    if (!arguments[0].isNumber() || !arguments[1].isNumber())
+        throw RuntimeError("Both pwr argument should be a number.");
+
+    double number = arguments[0].getNumber();
+    double pwr = arguments[1].getNumber();
+
+    return Object(pow(number, pwr));
+}
+
+int stdlibFunctions::Power::arity() {
+    return 2;
+}
+
+std::string stdlibFunctions::Power::toString() {
+    return "<native function " + name() + ">";
+}
+
+std::string stdlibFunctions::Power::name() {
+    return "pwr";
+}
+
+stdlibFunctions::SqrRoot::SqrRoot() : KarolaScriptCallable(CallableType::FUNCTION) {}
+
+Object stdlibFunctions::SqrRoot::call(Interpreter &interpreter, const std::vector<Object> &arguments) {
+    if (!arguments[0].isNumber())
+        throw RuntimeError("toLower argument should be a string.");
+
+    return Object(sqrt(arguments[0].getNumber()));
+}
+
+int stdlibFunctions::SqrRoot::arity() {
+    return 1;
+}
+
+std::string stdlibFunctions::SqrRoot::toString() {
+    return "<native function " + name() + ">";
+}
+
+std::string stdlibFunctions::SqrRoot::name() {
+    return "sqrr00t";
 }
