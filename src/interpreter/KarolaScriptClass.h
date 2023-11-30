@@ -39,7 +39,7 @@ public:
 
 class KarolaScriptMetaClass : public KarolaScriptClass {
 private:
-    KarolaScriptMetaClass() : KarolaScriptClass("MetaClass", nullptr, {}, {}) {}
+    KarolaScriptMetaClass() : KarolaScriptClass("MetaClazz", nullptr, {}, {}) {}
 
 public:
     KarolaScriptMetaClass(KarolaScriptMetaClass const&) = delete;
