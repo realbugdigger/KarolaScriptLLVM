@@ -32,7 +32,7 @@ public:
     virtual R visitAssignExpr(Assign& expr) = 0;
     virtual R visitBinaryExpr(Binary& expr) = 0;
     virtual R visitCallExpr(Call& expr) = 0;
-    virtual R visitAnonFunctionExpr(AnonFunction& expr) = 0; //
+    virtual R visitAnonFunctionExpr(AnonFunction& expr) = 0;
     virtual R visitGetExpr(Get& expr) = 0;
     virtual R visitGroupingExpr(Grouping& expr) = 0;
     virtual R visitLiteralExpr(Literal& expr) = 0;

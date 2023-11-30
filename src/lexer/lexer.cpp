@@ -137,7 +137,14 @@ static TokenType identifierType() {
     switch (lexeme.start[0]) {
         case 'a': return checkKeyword(1, 2, "nd", TOKEN_AND);
         case 'b': return checkKeyword(1, 4, "reak", TOKEN_BREAK);
-        case 'c': return checkKeyword(1, 4, "lazz", TOKEN_CLAZZ);
+        case 'c':
+            if (lexeme.current - lexeme.start > 1) {
+                switch (lexeme.start[1]) {
+                    case 'l': return checkKeyword(2, 3, "azz", TOKEN_CLAZZ);
+                    case 'o': return checkKeyword(2, 5, "nsole", TOKEN_KONSOLE);
+                }
+            }
+            break;
         case 'e': return checkKeyword(1, 3, "lse", TOKEN_ELSE);
         case 'f':
             if (lexeme.current - lexeme.start > 1) {
@@ -151,7 +158,6 @@ static TokenType identifierType() {
         case 'i': return checkKeyword(1, 1, "f", TOKEN_IF);
         case 'n': return checkKeyword(1, 2, "ull", TOKEN_NULL);
         case 'o': return checkKeyword(1, 1, "r", TOKEN_OR);
-        case 'k': return checkKeyword(1, 6, "onsole", TOKEN_KONSOLE);
         case 'r': return checkKeyword(1, 5, "eturn", TOKEN_RETURN);
         case 's':
             if (lexeme.current - lexeme.start > 1) {

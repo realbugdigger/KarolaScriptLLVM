@@ -54,3 +54,23 @@ std::string stdlibFunctions::Sleep::toString() {
 std::string stdlibFunctions::Sleep::name() {
     return "sleep";
 }
+
+stdlibFunctions::Input::Input() : KarolaScriptCallable(CallableType::FUNCTION) {}
+
+Object stdlibFunctions::Input::call(Interpreter &interpreter, const std::vector<Object> &arguments) {
+
+
+    return Object::Null();
+}
+
+int stdlibFunctions::Input::arity() {
+    return 1;
+}
+
+std::string stdlibFunctions::Input::toString() {
+    return "<native function " + name() + ">";
+}
+
+std::string stdlibFunctions::Input::name() {
+    return "input";
+}

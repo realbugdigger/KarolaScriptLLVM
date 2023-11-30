@@ -27,4 +27,11 @@ namespace stdlibFunctions {
         std::string name() override;
     };
 
+    class Input : public KarolaScriptCallable {
+        Input();
+        Object call(Interpreter &interpreter, const std::vector<Object> &arguments) override;
+        int arity() override;
+        std::string toString() override;
+        std::string name() override;
+    };
 }
