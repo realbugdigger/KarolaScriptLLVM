@@ -101,7 +101,7 @@ int main(int argc, const char* argv[]) {
 
     // 2. This interpreter is pretty bare bones. It doesn't have stuff like interactive debugger and static analyzer.
 
-    if (argc == 1) {
+    if (argc == 2) {
         repl();
     } else if (argc == 1) {
 //        runFile(argv[1]);

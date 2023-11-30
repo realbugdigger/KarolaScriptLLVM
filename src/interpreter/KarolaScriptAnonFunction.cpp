@@ -9,7 +9,6 @@
 #include "Interpreter.h"
 #include "../parser/Stmt.h"
 #include "../lexer/Token.h"
-//#include "typedefs.h"
 #include "KarolaScriptClass.h"
 #include "RuntimeError.h"
 
@@ -23,24 +22,14 @@ Object KarolaScriptAnonFunction::call(Interpreter& interpreter, const std::vecto
 
     if (!arguments.empty()) {
         for (int i = 0; i < m_Declaration->m_Params.size(); i++) { // m_Declaration->m_Params.size() == arguments.size() => HAS TO BE!!!
-//            if (!arguments[i].isNull() && (arguments[i].type == ObjType::OBJTYPE_CALLABLE && arguments[i].getCallable()->m_Type == CallableType::ANON_FUNCTION)/*ObjType::OBJTYPE_ANONFUNCTION*/) {
-            if (!arguments[i].isNull() && arguments[i].isAnonFunction()) {
-                AnonFunction* functStmt = new AnonFunction(/*m_Declaration->m_Params[i],*/ arguments[i].getAnonFunction()->m_Params, arguments[i].getAnonFunction()->m_Body);
-                std::shared_ptr<KarolaScriptAnonFunction> ksFunct = std::make_unique<KarolaScriptAnonFunction>(functStmt, environment);
-                Object anonFunctObject(ksFunct);
-                environment->define(m_Declaration->m_Params[i], anonFunctObject);
-            } else {
-                environment->define(m_Declaration->m_Params[i], arguments[i]);
-            }
+            environment->define(m_Declaration->m_Params[i], arguments[i]);
         }
     }
 
     try {
         interpreter.executeBlock(m_Declaration->m_Body, environment);
     } catch (ReturnException& returnValue) {
-        /*NOTE: We're using exceptions as control flow here because it is the cleanest way to implement return given
-        how the book implements the interpreter. This exception was thrown in the visitReturnStmt method of the interpreter*/
-
+        /* NOTE: This exception was thrown in the visitReturnStmt method of the interpreter */
         return returnValue.m_Value;
     }
 
