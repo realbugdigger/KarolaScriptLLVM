@@ -28,6 +28,7 @@ namespace stdlibFunctions {
     };
 
     class Input : public KarolaScriptCallable {
+    public:
         Input();
         Object call(Interpreter &interpreter, const std::vector<Object> &arguments) override;
         int arity() override;

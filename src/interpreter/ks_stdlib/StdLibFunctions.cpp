@@ -6,6 +6,7 @@
 #include <thread>
 #include <sstream>
 #include "../RuntimeError.h"
+#include "../../lexer/lexer.h"
 
 class Interpreter;
 
@@ -58,13 +59,14 @@ std::string stdlibFunctions::Sleep::name() {
 stdlibFunctions::Input::Input() : KarolaScriptCallable(CallableType::FUNCTION) {}
 
 Object stdlibFunctions::Input::call(Interpreter &interpreter, const std::vector<Object> &arguments) {
-
-
-    return Object::Null();
+    std::string input;
+    std::getline(std::cin, input);
+    return Object(input);
+//    return Object::Null();
 }
 
 int stdlibFunctions::Input::arity() {
-    return 1;
+    return 0;
 }
 
 std::string stdlibFunctions::Input::toString() {

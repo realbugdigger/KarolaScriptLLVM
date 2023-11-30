@@ -142,8 +142,9 @@ std::string Interpreter::stringify(const Object& object) {
 void Interpreter::loadNativeFunctions() {
     SharedCallablePtr clock = std::make_shared<stdlibFunctions::Clock>();
     SharedCallablePtr sleep = std::make_shared<stdlibFunctions::Sleep>();
+    SharedCallablePtr input = std::make_shared<stdlibFunctions::Input>();
 
-    std::vector<Object> functions = {Object(clock), Object(sleep)};
+    std::vector<Object> functions = {Object(clock), Object(sleep), Object(input)};
     for (const auto &function : functions) {
         globals->define(function.getCallable()->name(), function);
     }
