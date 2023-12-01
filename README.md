@@ -119,6 +119,7 @@ If metaprogramming tools like metaclasses are used, they should be applied with 
 - Improve error handling; Currently errors are only displayed on `stderr`, logging to a file will be a nice addition.
     - There is `ErrorReporter.h` file in utils folder. Some [strategy design pattern](https://refactoring.guru/design-patterns/strategy) can be used to select where to redirect errors and warnings.
 - Add lambda like it works in Python
+- Add possiblity for user to create his own metaclass; For example user-defined metaclasses can start with `$clazz`
 
 ### Licence
 
