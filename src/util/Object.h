@@ -11,15 +11,12 @@ enum ObjType {
 class KarolaScriptCallable;
 class KarolaScriptInstance;
 
-class AnonFunction;
-
 struct Token;
 
 /* A shared ptr is used because resources such as functions, classes, and instances are created and stored in memory only once but can
  * be shared with multiple users. For example, two variables can refer to the same function.
  * */
 using SharedCallablePtr = std::shared_ptr<KarolaScriptCallable>;
-using SharedAnonFunctPtr = std::shared_ptr<AnonFunction>;
 using SharedInstancePtr = std::shared_ptr<KarolaScriptInstance>;
 
 /* Object class is used to represent variables, instances, functions, classes, etc, essentially surrendering type safety
@@ -33,7 +30,6 @@ private:
     bool boolean = false;
     std::string str;
     SharedCallablePtr callable;
-    SharedAnonFunctPtr anonFunction;
     SharedInstancePtr instance;
 public:
     ObjType type = ObjType::OBJTYPE_NULL;
@@ -51,10 +47,6 @@ public:
     explicit Object(SharedCallablePtr callable);
 
     explicit Object(KarolaScriptCallable* ptr) = delete;
-
-    explicit Object(SharedAnonFunctPtr anonFunctPtr);
-
-    explicit Object(AnonFunction* ptr) = delete;
 
     explicit Object(SharedInstancePtr instance);
 
@@ -85,8 +77,6 @@ public:
     std::string getString() const;
 
     SharedCallablePtr getCallable() const;
-
-    SharedAnonFunctPtr getAnonFunction() const;
 
     SharedInstancePtr getClassInstance() const;
 };

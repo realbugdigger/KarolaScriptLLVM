@@ -104,14 +104,11 @@ int main(int argc, const char* argv[]) {
     if (argc == 2) {
         repl();
     } else if (argc == 1) {
+//        hand-written parser and lexer
 //        runFile(argv[1]);
-//        runFile("/home/marko/compilers/KarolaScript/src/resources/code1.ks");
-//        runFile("/home/marko/compilers/KarolaScript/src/resources/code2.ks");
-//        runFile("/home/marko/compilers/KarolaScript/src/resources/code3.ks");
-//        runFile("/home/marko/compilers/KarolaScript/src/resources/code4.ks");
-        runFile("/home/marko/compilers/KarolaScript/src/resources/code5.ks");
-//        runFile("/home/marko/compilers/KarolaScript/src/resources/code6.ks");
-//        runFile("/home/marko/compilers/KarolaScript/src/resources/code7.ks");
+//        runFile("/home/marko/compilers/KarolaScript/src/resources/basics.ks");
+//        runFile("/home/marko/compilers/KarolaScript/src/resources/functions.ks");
+        runFile("/home/marko/compilers/KarolaScript/src/resources/classes.ks");
     } else {
         fprintf(stderr, "Usage: ks [filePath]\n");
         exit(64);

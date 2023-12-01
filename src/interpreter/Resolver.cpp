@@ -291,7 +291,7 @@ void Resolver::visitWhileStmt(While& stmt) {
 void Resolver::visitIfStmt(If& stmt) {
     resolve(stmt.m_Condition.get());
     resolve(stmt.m_ThenBranch.get());
-    if (stmt.m_ElseBranch.has_value()) {
+    if (stmt.m_ElseBranch.has_value() && stmt.m_ElseBranch.value() != nullptr) {
         resolve(stmt.m_ElseBranch->get());
     }
 }

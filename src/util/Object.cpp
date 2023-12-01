@@ -45,8 +45,6 @@ Object::Object(bool boolean) : type(ObjType::OBJTYPE_BOOL), boolean(boolean) {}
 
 Object::Object(SharedCallablePtr callable) : type(ObjType::OBJTYPE_CALLABLE), callable(std::move(callable)) {}
 
-Object::Object(SharedAnonFunctPtr anonFunctPtr) : type(ObjType::OBJTYPE_ANONFUNCTION), anonFunction(std::move(anonFunctPtr)) {}
-
 Object::Object(SharedInstancePtr instance) : type(ObjType::OBJTYPE_INSTANCE), instance(std::move(instance)) {}
 
 Object Object::Null() {
@@ -109,13 +107,6 @@ SharedCallablePtr Object::getCallable() const {
         throw std::runtime_error("Object does not contain a callable");
     }
     return callable;
-}
-
-SharedAnonFunctPtr Object::getAnonFunction() const {
-    if (!isAnonFunction()){
-        throw std::runtime_error("Object does not contain a anonymous function");
-    }
-    return anonFunction;
 }
 
 SharedInstancePtr Object::getClassInstance() const {

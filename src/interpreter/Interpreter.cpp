@@ -459,7 +459,7 @@ void Interpreter::visitIfStmt(If& stmt) {
     try {
         if (isTruthy(evaluate(stmt.m_Condition.get()))) {
             execute(stmt.m_ThenBranch.get());
-        } else if (stmt.m_ElseBranch.has_value()) {
+        } else if (stmt.m_ElseBranch.has_value() && stmt.m_ElseBranch.value() != nullptr) {
             execute(stmt.m_ElseBranch->get());
         }
     } catch (BreakException& e) {

@@ -16,7 +16,7 @@ KarolaScriptClass::KarolaScriptClass(const std::string& name_,
                                     const std::unordered_map<std::string, Object>& staticMethods_
                                     ) : KarolaScriptCallable(CallableType::CLASS), m_ClassName(name_), m_Superclass(superclass_), m_Methods(methods_), m_StaticMethods(staticMethods_)
 {
-    if (name_ != "MetaClass" && name_ != "Math") {
+    if (name_ != "MetaClazz" && name_ != "Math") {
         if (m_Superclass.has_value() && m_Superclass->get()->m_Type != CallableType::CLASS)
             throw std::runtime_error("Class can only inherit a class.");
 
