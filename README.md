@@ -113,13 +113,17 @@ The motto "explicit is better than implicit" from the Zen of Python applies here
 If metaprogramming tools like metaclasses are used, they should be applied with care and for a good reason.
 
 ### Ideas for future enhancements
-
+- Number literals written in binary, hex, and octal
 - Pratt Parser for expressions (currently it works with recursive descent for both expressions and statements)
+- Arrays
 - Add more functions to stdlib and more stdlib classes
 - Improve error handling; Currently errors are only displayed on `stderr`, logging to a file will be a nice addition.
     - There is `ErrorReporter.h` file in utils folder. Some [strategy design pattern](https://refactoring.guru/design-patterns/strategy) can be used to select where to redirect errors and warnings.
+- Add VM with garbage collection and bytecode generation
 - Add lambda like it works in Python
 - Add possiblity for user to create his own metaclass; For example user-defined metaclasses can start with `$clazz`
+- test cases
+- Allow multiple code files
 
 ### Licence
 
@@ -133,9 +137,13 @@ link goes here
 ***
 ***
 
+This interpreter is pretty bare bones. It doesn't have stuff like interactive debugger and static analyzer.
+
 KarolaScript is a toy programing language I made for my own better understanding of overall compilation process, compiler and interpreter knowledge.
 KarolaScript is dynamicaly typed procedular objet oriented language. It looks like a mix of Python and C. In KarolaScript both classes and functions are considered first-class citizens!
 That means language treats these entities (functions or classes) like any other objects and supports: assign operation to variables, passed as arguments to other functions, returned by other functions and can be included in data structures.
+hand-written parser and lexer.
+
 
 Currently the way KarolaScript code is being executed by recursively evaluating the AST.
 More optimal way would be to make a virtual machine and bytecode for the language and the execute it on top of VM.
