@@ -97,14 +97,11 @@ static void runFile(const char* path) {
 
 int main(int argc, const char* argv[]) {
 
-    // 1. Reference for used error exit codes: https://man.freebsd.org/cgi/man.cgi?query=sysexits&apropos=0&sektion=0&manpath=FreeBSD+4.3-RELEASE&format=html
-
-    // 2. This interpreter is pretty bare bones. It doesn't have stuff like interactive debugger and static analyzer.
+    // Reference for used error exit codes: https://man.freebsd.org/cgi/man.cgi?query=sysexits&apropos=0&sektion=0&manpath=FreeBSD+4.3-RELEASE&format=html
 
     if (argc == 1) {
         repl();
     } else if (argc == 2) {
-//        hand-written parser and lexer
         runFile(argv[1]);
 //        runFile("/home/marko/compilers/KarolaScript/src/resources/basics.ks");
 //        runFile("/home/marko/compilers/KarolaScript/src/resources/functions.ks");
