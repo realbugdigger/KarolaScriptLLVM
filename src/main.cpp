@@ -101,14 +101,14 @@ int main(int argc, const char* argv[]) {
 
     // 2. This interpreter is pretty bare bones. It doesn't have stuff like interactive debugger and static analyzer.
 
-    if (argc == 2) {
+    if (argc == 1) {
         repl();
-    } else if (argc == 1) {
+    } else if (argc == 2) {
 //        hand-written parser and lexer
-//        runFile(argv[1]);
+        runFile(argv[1]);
 //        runFile("/home/marko/compilers/KarolaScript/src/resources/basics.ks");
 //        runFile("/home/marko/compilers/KarolaScript/src/resources/functions.ks");
-        runFile("/home/marko/compilers/KarolaScript/src/resources/classes.ks");
+//        runFile("/home/marko/compilers/KarolaScript/src/resources/classes.ks");
     } else {
         fprintf(stderr, "Usage: ks [filePath]\n");
         exit(64);

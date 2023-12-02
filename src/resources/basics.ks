@@ -5,8 +5,6 @@ console "Hello World" + (a + b);
 
 // console (10 / 0);
 
-// /* This is a multi-line comment */
-
 let name = "bug_digger";
 name = toUpper(name);
 console name;

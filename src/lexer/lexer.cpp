@@ -111,11 +111,11 @@ static void skipWhitespace() {
                 advance();
                 break;
             case '/':
-                if (peekNext() == '/') {
+                if (match('/')) {
                     // A comment goes until the end of the line.
                     while (peek() != '\n' && !isAtEnd()) advance();
-                } else {
-                    return;
+                } else if (match('*')) {
+                    commentBlock();
                 }
                 break;
             default:
@@ -212,7 +212,7 @@ static Token string() {
     // The closing quote.
     advance();
 
-    std::string literal(lexeme.start, (int)(lexeme.current - lexeme.start));
+    std::string literal(lexeme.start + 1, (int)(lexeme.current - lexeme.start ) - 2);
     return makeToken(TOKEN_STRING, literal);
 }
 
