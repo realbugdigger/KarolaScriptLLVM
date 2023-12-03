@@ -9,6 +9,19 @@ An upcoming plan includes developing a virtual machine and dedicated bytecode to
 Please note, the current feature list includes class and function operations, control flows, code blocks, and advanced parser capabilities. 
 Updates will be made as progress continues.
 
+### Building
+
+```
+git clone git@github.com:realbugdigger/KarolaScript.git
+cd KarolaScript
+mkdir build
+cd build
+cmake ..
+make
+```
+
+After all that you can `./KarolaScript` for REPL or `./KarolaScript example.ks` for specific file
+
 ### Grammar
 
 ```
