@@ -140,7 +140,7 @@ If metaprogramming tools like metaclasses are used, they should be applied with 
 
 ### Licence
 
-MIT licence here
+[MIT licence](https://github.com/realbugdigger/KarolaScript/blob/master/LICENSE)
 
 ### LLVM version
 
