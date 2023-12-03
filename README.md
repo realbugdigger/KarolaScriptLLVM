@@ -120,9 +120,9 @@ If metaprogramming tools like metaclasses are used, they should be applied with 
 - Improve error handling; Currently errors are only displayed on `stderr`, logging to a file will be a nice addition.
     - There is `ErrorReporter.h` file in utils folder. Some [strategy design pattern](https://refactoring.guru/design-patterns/strategy) can be used to select where to redirect errors and warnings.
 - Add VM with garbage collection and bytecode generation
-- Add lambda like it works in Python
+- Add lambda but make it work like in Python
 - Add possiblity for user to create his own metaclass; For example user-defined metaclasses can start with `$clazz`
-- test cases
+- Test cases
 - Allow multiple code files
 
 ### Licence
@@ -132,38 +132,3 @@ MIT licence here
 ### LLVM version
 
 link goes here
-
-***
-***
-***
-
-This interpreter is pretty bare bones. It doesn't have stuff like interactive debugger and static analyzer.
-
-KarolaScript is a toy programing language I made for my own better understanding of overall compilation process, compiler and interpreter knowledge.
-KarolaScript is dynamicaly typed procedular objet oriented language. It looks like a mix of Python and C. In KarolaScript both classes and functions are considered first-class citizens!
-That means language treats these entities (functions or classes) like any other objects and supports: assign operation to variables, passed as arguments to other functions, returned by other functions and can be included in data structures.
-hand-written parser and lexer.
-
-
-Currently the way KarolaScript code is being executed by recursively evaluating the AST.
-More optimal way would be to make a virtual machine and bytecode for the language and the execute it on top of VM.
-I'll add that when I have the time.
-
-Currently supported features:
-- provides REPL as well as single file interpretation
-- assign operation
-- classes
-- inheritance
-- functions
-- anonymous functions
-- function arguments
-- static methods inside the class
-- ternary operation
-- binary operations
-- MetaClasses ( currently one metaclass that initializes all other classes, so user can't currently create their own metaclass )
-- if/else and for/while control flows and loops
-- break and return statements
-- blocks of code, with `{` and `}` braces
-- Parser has ability to print out warning to a console if some variable was declared in certain scope but was never used or accessed (in inner or same level scope) !
-- Parser will also report if some anonymous function was passed but never used
-
