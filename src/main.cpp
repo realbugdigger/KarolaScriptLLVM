@@ -11,7 +11,6 @@
 
 Interpreter interpreter = Interpreter();
 Resolver resolver = Resolver(interpreter);
-Generator generator = Generator();
 
 // Both the prompt and the file runner are thin wrappers around this core function
 static void run(const char* program) {
@@ -103,7 +102,7 @@ int main(int argc, const char* argv[]) {
 
     // Reference for used error exit codes: https://man.freebsd.org/cgi/man.cgi?query=sysexits&apropos=0&sektion=0&manpath=FreeBSD+4.3-RELEASE&format=html
 
-    generator.generate();
+//    generator.generate();
 
     if (argc == 1) {
         repl();

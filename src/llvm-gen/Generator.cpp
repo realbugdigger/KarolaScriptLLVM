@@ -36,16 +36,23 @@ void Generator::saveModuleToFile(const std::string &fileName) {
     module->print(outLL, nullptr);
 }
 
-llvm::Value *Generator::gen(/* std::vector<UniqueStmtPtr>& statements */) {
-    auto str = builder->CreateGlobalString("Hello, world!\n");
+llvm::Value *Generator::gen(Object o) {
+    if (o.isNumber())
+        return builder->getInt32(o.getNumber());
+    if (o.isString())
+        return builder->CreateGlobalString(o.getString());
+    if (o.isBoolean())
+        return builder->getInt1(o.getBoolean());
 
-    // call to printf;
-    auto printfFn = module->getFunction("printf");
-
-    // args
-    std::vector<llvm::Value*> args{str};
-
-    return builder->CreateCall(printfFn, args);
+//    auto str = builder->CreateGlobalString("Hello, world!\n");
+//
+//    // call to printf;
+//    auto printfFn = module->getFunction("printf");
+//
+//    // args
+//    std::vector<llvm::Value*> args{str};
+//
+//    return builder->CreateCall(printfFn, args);
 }
 
 llvm::GlobalVariable *Generator::createGlobalVar(const std::string &name, llvm::Constant *init) {

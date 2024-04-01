@@ -9,6 +9,8 @@
 #include <llvm/IR/IRBuilder.h>
 #include <llvm/IR/Verifier.h>
 
+#include "../util/Object.h"
+
 class Generator {
 private:
     // Currently compiling function
@@ -48,16 +50,8 @@ public:
     Generator();
 
     void generate();
-private:
-    void moduleInit();
 
-    // Saves IR to file.
-    void saveModuleToFile(const std::string& fileName);
-
-    // main compile loop
-    llvm::Value* gen();
-
-    llvm::GlobalVariable* createGlobalVar(const std::string& name, llvm::Constant* init);
+    llvm::Value* gen(Object o);
 
     // Define external functions (from libc++)
     void setupExternalFunctions();
@@ -75,6 +69,11 @@ private:
      * fn->getBasicBlockList().push_back(block);
      */
     llvm::BasicBlock* createBasicBlock(const std::string name, llvm::Function* fn = nullptr);
+private:
+    void moduleInit();
+
+    // Saves IR to file.
+    void saveModuleToFile(const std::string& fileName);
 
     void compile();
 };
