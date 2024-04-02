@@ -123,6 +123,22 @@ private:
 
     llvm::Value* lookupVariable(const Token& identifier, const Expr* variableExpr);
 
+
+    // Returns size of a type in bytes
+    size_t getTypeSize(llvm::Type* type_);
+
+    /**
+     * Extracts var or parameter name considering type.
+     */
+    std::string extractVarName(Token token);
+
+    /**
+     * Extracts var or parameter type with i32 as default.
+     */
+    llvm::Type* extractVarType(/*const Expr& expr*/);
+
+    llvm::Value* allocVar(const std::string& name, llvm::Type* type_);
+
     llvm::Value* compileFunction(const Function* functExpr);
 
     llvm::Function* createFunction(const std::string& fnName, llvm::FunctionType* fnType);

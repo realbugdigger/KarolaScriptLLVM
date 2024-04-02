@@ -141,6 +141,34 @@ void CodeGenVisitor::visitLetStmt(Let &stmt) {
     environment->define(stmt.m_Name.lexeme, value);
 }
 
+void CodeGenVisitor::visitWhileStmt(While &stmt) {
+    // condition
+    auto condBlock = createBasicBlock("cond", fn);
+    builder->CreateBr(condBlock);
+
+    // Body, while-end blocks
+    auto bodyBlock = createBasicBlock("body");
+    auto loopEndBlock = createBasicBlock("loopend");
+
+    // Compile <cond>
+    builder->SetInsertPoint(condBlock);
+    auto cond = gen(exp.list[1]);
+
+    // Condition branch
+    builder->CreateCondBr(cond, bodyBlock, loopEndBlock);
+
+    // Body
+    fn->getBasicBlockList().push_back(bodyBlock);
+    builder->SetInsertPoint(bodyBlock);
+    generate(stmt.m_Body);
+    builder->CreateBr(condBlock);
+
+    fn->getBasicBlockList().push_back(loopEndBlock);
+    builder->SetInsertPoint(loopEndBlock);
+
+    builder->getInt32(0);
+}
+
 void CodeGenVisitor::compile(Stmt *stmt) {
     stmt->accept(*this);
 }
@@ -177,7 +205,7 @@ void CodeGenVisitor::saveModuleToFile(const std::string &fileName) {
 
 llvm::Value *CodeGenVisitor::gen(Object object) {
     if (object.isNumber())
-        return builder->getInt32(object.getNumber());
+        return builder->getInt64(object.getNumber());
     if (object.isString())
         return builder->CreateGlobalString(object.getString());
     if (object.isBoolean())
@@ -212,6 +240,29 @@ llvm::Value* CodeGenVisitor::lookupVariable(const Token &identifier, const Expr 
     }
 }
 
+size_t CodeGenVisitor::getTypeSize(llvm::Type *type_) {
+    return module->getDataLayout().getTypeAllocSize(type_);
+}
+
+std::string CodeGenVisitor::extractVarName(Token token) {
+    return token.lexeme;
+}
+
+llvm::Type *CodeGenVisitor::extractVarType() {
+
+}
+
+llvm::Value *CodeGenVisitor::allocVar(const std::string &name, llvm::Type *type_) {
+    builder->SetInsertPoint(&fn->getEntryBlock());
+
+    auto varAlloc = builder->CreateAlloca(type_, 0, name.c_str());
+
+    // add to the environment
+    env->define(name, varAlloc);
+
+    return varAlloc;
+}
+
 llvm::Value *CodeGenVisitor::compileFunction(const Function* functExpr) {
     auto params = functExpr->m_Params;
     auto body = hasReturnType(functExpr) ? fnExp.list[5] : fnExp.list[3];
@@ -233,13 +284,13 @@ llvm::Value *CodeGenVisitor::compileFunction(const Function* functExpr) {
     );
 
     for (auto& arg : fn->args()) {
-        auto param = params[idx++];
+        Token param = params[idx++];
         auto argName = extractVarName(param);
 
         arg.setName(argName);
 
         // Allocate a local variable per argument to make arguments mutable.
-        auto argBinding = allocVar(argName, arg.getType(), fnEnv);
+        llvm::Value* argBinding = allocVar(argName, arg.getType(), fnEnv);
         builder->CreateStore(&arg, argBinding);
     }
 
