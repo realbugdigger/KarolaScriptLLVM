@@ -11,8 +11,6 @@
 #include "../parser/Expr.h"
 #include "../parser/Stmt.h"
 
-//#include "../llvm-gen/Generator.h"
-
 class CodeGenVisitor : public ExprVisitor<llvm::Value*>, public StmtVisitor {
 private:
     // Currently compiling function
@@ -115,5 +113,29 @@ public:
 private:
     void compile(Stmt* stmt);
 
+    void moduleInit();
+
+    void setupExternFunctions();
+
+    void saveModuleToFile(const std::string& fileName);
+
     llvm::Value* gen(Object object);
+
+    llvm::Value* lookupVariable(const Token& identifier, const Expr* variableExpr);
+
+    llvm::Value* compileFunction(const Function* functExpr);
+
+    llvm::Function* createFunction(const std::string& fnName, llvm::FunctionType* fnType);
+
+    // Create function prototype (defines the function but not the body)
+    llvm::Function* createFunctionPrototype(const std::string& fnName, llvm::FunctionType* fnType);
+
+    void createFunctionBlock(llvm::Function* fn);
+
+    /**
+     * Creates a basic block. If the `fn` is passed, the block is automatically appended to the parent function.
+     * Otherwise, the block should later be appended manually via
+     * fn->getBasicBlockList().push_back(block);
+     */
+    llvm::BasicBlock* createBasicBlock(const std::string& name, llvm::Function* fn = nullptr);
 };
