@@ -6,8 +6,8 @@
 #include <llvm/IR/Verifier.h>
 #include <llvm/IR/Value.h>
 
-#include "../interpreter/Interpreter.h"
-#include "../interpreter/Environment.h"
+//#include "../interpreter/Interpreter.h"
+#include "./Environment.h"
 #include "../parser/Expr.h"
 #include "../parser/Stmt.h"
 
@@ -141,12 +141,12 @@ private:
 
     llvm::Value* compileFunction(const Function* functExpr);
 
-    llvm::Function* createFunction(const std::string& fnName, llvm::FunctionType* fnType);
+    llvm::Function* getOrCreateFunction(const std::string& fnName, llvm::FunctionType* fnType);
 
     // Create function prototype (defines the function but not the body)
     llvm::Function* createFunctionPrototype(const std::string& fnName, llvm::FunctionType* fnType);
 
-    void createFunctionBlock(llvm::Function* fn);
+    void createFunctionBlock(llvm::Function* llvmFn);
 
     /**
      * Creates a basic block. If the `fn` is passed, the block is automatically appended to the parent function.

@@ -2,7 +2,6 @@
 #include "CodeGenVisitor.h"
 
 #include "../interpreter/RuntimeError.h"
-#include "../interpreter/KarolaScriptFunction.h"
 
 CodeGenVisitor::CodeGenVisitor(Interpreter& interpreter) : m_Interpreter(interpreter) {
     moduleInit();
@@ -125,7 +124,28 @@ llvm::Value* CodeGenVisitor::visitBinaryExpr(Binary &expr) {
 }
 
 void CodeGenVisitor::visitFunctionStmt(Function &stmt) {
-    createFunction(stmt.m_Name.lexeme, llvm::FunctionType::get(/* return type*/ builder->getInt32Ty(),true));
+    compileFunction(&stmt);
+}
+
+void CodeGenVisitor::visitBreakStmt(Break &stmt) {
+//    To generate equivalent LLVM IR for break statement, you need to utilize IRBuilder
+//    to create a branch instruction to the corresponding block where the loop ends.
+
+//    However, remember the information about the loop end block should be stored
+//    somewhere in your compiler as it is not managed by LLVM itself.
+
+//    ```
+//    llvm::IRBuilder<> builder(the_context);
+//    llvm::BasicBlock* BreakBlock; // initialized to point at the block we need to break to.
+//
+//    // assuming BreakBlock initialized properly...
+//    builder.CreateBr(BreakBlock);
+//    ```
+
+//    Where BreakBlock is BasicBlock that represents the end of the loop in which the break statement occurs.
+//
+//    Note: In a real scenario, BreakBlock should be maintained in a stack data structure as a part of your
+//    loop handling code in your compiler so that nested break statements can function as expected
 }
 
 void CodeGenVisitor::visitLetStmt(Let &stmt) {
@@ -219,10 +239,10 @@ llvm::Value* CodeGenVisitor::lookupVariable(const Token &identifier, const Expr 
             // create local var
             builder->SetInsertPoint(&fn->getEntryBlock());
 
-            auto varAlloc = builder->CreateAlloca(type_, 0, name.c_str());
+            auto varAlloc = builder->CreateAlloca(type_, 0, identifier.lexeme.c_str());
 
             // add to the environment:
-            env->define(name, varAlloc);
+            environment->define(identifier.lexeme, varAlloc);
 
             return varAlloc;
         }
@@ -255,10 +275,10 @@ llvm::Type *CodeGenVisitor::extractVarType() {
 llvm::Value *CodeGenVisitor::allocVar(const std::string &name, llvm::Type *type_) {
     builder->SetInsertPoint(&fn->getEntryBlock());
 
-    auto varAlloc = builder->CreateAlloca(type_, 0, name.c_str());
+    auto varAlloc = builder->CreateAlloca(type_, nullptr, name);
 
     // add to the environment
-    env->define(name, varAlloc);
+    environment->define(name, varAlloc);
 
     return varAlloc;
 }
@@ -272,16 +292,15 @@ llvm::Value *CodeGenVisitor::compileFunction(const Function* functExpr) {
     auto prevBlock = builder->GetInsertBlock();
 
     // Override fn to compile body
-    auto newFn = createFunction(fnName, extractFunctionType(fnExp), env);
+    llvm::Function* newFn = getOrCreateFunction(functExpr->m_Name.lexeme, extractFunctionType(functExpr));
     fn = newFn;
 
     // Set parameter names
-    auto idx = 0;
+    int idx = 0;
 
-    // Function environment for params:
-    auto fnEnv = std::make_shared<Environment>(
-            std::map<std::string, llvm::Value*>{}, env
-    );
+    // Function environment for params
+    // Enter a new environment.
+    EnvironmentGuard environment_guard{*this, std::move(environment)};;
 
     for (auto& arg : fn->args()) {
         Token param = params[idx++];
@@ -290,11 +309,11 @@ llvm::Value *CodeGenVisitor::compileFunction(const Function* functExpr) {
         arg.setName(argName);
 
         // Allocate a local variable per argument to make arguments mutable.
-        llvm::Value* argBinding = allocVar(argName, arg.getType(), fnEnv);
+        llvm::Value* argBinding = allocVar(argName, arg.getType());
         builder->CreateStore(&arg, argBinding);
     }
 
-    builder->CreateRet(gen(body, fnEnv));
+    builder->CreateRet(gen(body));
 
     // Restore previous fn after compiling.
     builder->SetInsertPoint(prevBlock);
@@ -303,33 +322,33 @@ llvm::Value *CodeGenVisitor::compileFunction(const Function* functExpr) {
     return newFn;
 }
 
-llvm::Function *CodeGenVisitor::createFunction(const std::string &fnName, llvm::FunctionType *fnType) {
-    // Function prototype might already be defined:
-    auto fn = module->getFunction(fnName);
+llvm::Function *CodeGenVisitor::getOrCreateFunction(const std::string &fnName, llvm::FunctionType *fnType) {
+    // Function prototype might already be defined
+    llvm::Function* llvmFn = module->getFunction(fnName);
 
-    // If not, allocate the function:
-    if (fn == nullptr) {
-        fn = createFunctionPrototype(fnName, fnType);
+    // If not, allocate the function
+    if (llvmFn == nullptr) {
+        llvmFn = createFunctionPrototype(fnName, fnType);
     }
 
-    createFunctionBlock(fn);
-    return fn;
+    createFunctionBlock(llvmFn);
+    return llvmFn;
 }
 
 llvm::Function *CodeGenVisitor::createFunctionPrototype(const std::string &fnName, llvm::FunctionType *fnType) {
     // Function prototype might already be defined:
-    auto fn = llvm::Function::Create(fnType, llvm::Function::ExternalLinkage, fnName, *module);
+    llvm::Function* llvmFn = llvm::Function::Create(fnType, llvm::Function::ExternalLinkage, fnName, *module);
 
     // Validate the generated code, checking for consistency.
-    llvm::verifyFunction(*fn);
-    return fn;
+    llvm::verifyFunction(*llvmFn);
+    return llvmFn;
 }
 
-void CodeGenVisitor::createFunctionBlock(llvm::Function *fn) {
-    auto entry = createBasicBlock("entry", fn);
+void CodeGenVisitor::createFunctionBlock(llvm::Function *llvmFn) {
+    auto entry = createBasicBlock("entry", llvmFn);
     builder->SetInsertPoint(entry);
 }
 
-llvm::BasicBlock *CodeGenVisitor::createBasicBlock(const std::string& name, llvm::Function *fn) {
-    return llvm::BasicBlock::Create(*ctx, name, fn);
+llvm::BasicBlock *CodeGenVisitor::createBasicBlock(const std::string& name, llvm::Function *llvmFn) {
+    return llvm::BasicBlock::Create(*ctx, name, llvmFn);
 }
