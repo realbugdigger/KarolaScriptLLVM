@@ -146,6 +146,8 @@ private:
     // Create function prototype (defines the function but not the body)
     llvm::Function* createFunctionPrototype(const std::string& fnName, llvm::FunctionType* fnType);
 
+    llvm::FunctionType* extractFunctionType(const Function& stmt);
+
     void createFunctionBlock(llvm::Function* llvmFn);
 
     /**

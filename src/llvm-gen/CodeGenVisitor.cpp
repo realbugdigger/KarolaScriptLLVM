@@ -1,6 +1,8 @@
 #include <iostream>
 #include "CodeGenVisitor.h"
 
+// TODO
+// Make some "LLVM IR CodeGenException"
 #include "../interpreter/RuntimeError.h"
 
 CodeGenVisitor::CodeGenVisitor(Interpreter& interpreter) : m_Interpreter(interpreter) {
@@ -46,6 +48,35 @@ llvm::Value *CodeGenVisitor::visitCallExpr(Call& expr) {
 //    auto fn = (llvm::Function*) callee;
 
     return builder->CreateCall(fn, args);
+}
+
+llvm::Value *CodeGenVisitor::visitGetExpr(Get &expr) {
+    llvm::Value *val = environment->lookup(expr.m_Name.lexeme);
+    if (val == nullptr) {
+//        throw new CodeGenException(std::string("Var not found: " + var.varName));
+    }
+    return val;
+}
+
+llvm::Value *CodeGenVisitor::visitAssignExpr(Assign &expr) {
+    if (expr.m_Value == nullptr) {
+//        throw new IRCodeGenException(
+//                std::string("Assigning a null expr to " + expr.identifier->varName));
+    }
+    llvm::Value *assignedVal = expr.m_Value->codegen(*this);
+    llvm::Value *id = expr.identifier->codegen(*this);
+    if (id == nullptr) {
+//        throw new CodeGenException(std::string("Trying to assign to a null id: " +
+//                                                 expr.identifier->varName));
+    }
+    auto distance = localsDistances.find(&expr);
+    if (distance != localsDistances.end()) {
+        environment->assignAt(distance->second, expr.m_Name.lexeme, assignedVal);
+    } else {
+        globals->assign(expr.m_Name.lexeme, assignedVal);
+    }
+    builder->CreateStore(assignedVal, id);
+    return assignedVal;
 }
 
 llvm::Value* CodeGenVisitor::visitBinaryExpr(Binary &expr) {
@@ -149,6 +180,31 @@ void CodeGenVisitor::visitBreakStmt(Break &stmt) {
 }
 
 void CodeGenVisitor::visitLetStmt(Let &stmt) {
+    if (expr.boundExpr == nullptr) {
+        throw new IRCodegenException(
+                std::string("Let - binding a null expr to " + expr.varName));
+    }
+    llvm::Value *boundVal = expr.boundExpr->codegen(*this);
+
+    // put allocainst in entry block of parent function, to be optimised by
+    // mem2reg
+    llvm::Function *parentFunction = builder->GetInsertBlock()->getParent();
+    llvm::IRBuilder<> TmpBuilder(&(parentFunction->getEntryBlock()),
+                                 parentFunction->getEntryBlock().begin());
+    llvm::AllocaInst *var = TmpBuilder.CreateAlloca(boundVal->getType(), nullptr,
+                                                    llvm::Twine(expr.varName));
+    varEnv[expr.varName] = var;
+    builder->CreateStore(boundVal, var);
+    return boundVal;
+
+
+
+
+
+
+
+
+
     // maybe check if already contains key with stmt.m_Name.lexeme, if yes throw RuntimeError
 
     Object value;
@@ -190,7 +246,7 @@ void CodeGenVisitor::visitWhileStmt(While &stmt) {
 }
 
 void CodeGenVisitor::compile(Stmt *stmt) {
-    stmt->accept(*this);
+    stmt->accept(this);
 }
 
 void CodeGenVisitor::moduleInit() {
@@ -234,30 +290,9 @@ llvm::Value *CodeGenVisitor::gen(Object object) {
 
 llvm::Value* CodeGenVisitor::lookupVariable(const Token &identifier, const Expr *variableExpr) {
     if (localsDistances.find(variableExpr) != localsDistances.end()){
-        Object o = environment->getAt(localsDistances[variableExpr], identifier.lexeme);
-        if (!o.isNull()) {
-            // create local var
-            builder->SetInsertPoint(&fn->getEntryBlock());
-
-            auto varAlloc = builder->CreateAlloca(type_, 0, identifier.lexeme.c_str());
-
-            // add to the environment:
-            environment->define(identifier.lexeme, varAlloc);
-
-            return varAlloc;
-        }
+        return environment->getAt(localsDistances[variableExpr], identifier.lexeme);
     }
-
-    Object o = globals->lookup(identifier);
-    if (!o.isNull()) {
-        // create global var
-        module->getOrInsertGlobal(identifier.lexeme, init->getType());
-        auto variable = module->getNamedGlobal(identifier.lexeme);
-        variable->setAlignment(llvm::MaybeAlign(4));
-        variable->setConstant(false);
-        variable->setInitializer(init);
-        return variable;
-    }
+    return globals->lookup(identifier.lexeme);
 }
 
 size_t CodeGenVisitor::getTypeSize(llvm::Type *type_) {
@@ -292,7 +327,7 @@ llvm::Value *CodeGenVisitor::compileFunction(const Function* functExpr) {
     auto prevBlock = builder->GetInsertBlock();
 
     // Override fn to compile body
-    llvm::Function* newFn = getOrCreateFunction(functExpr->m_Name.lexeme, extractFunctionType(functExpr));
+    llvm::Function* newFn = getOrCreateFunction(functExpr->m_Name.lexeme, extractFunctionType(*functExpr));
     fn = newFn;
 
     // Set parameter names
@@ -342,6 +377,25 @@ llvm::Function *CodeGenVisitor::createFunctionPrototype(const std::string &fnNam
     // Validate the generated code, checking for consistency.
     llvm::verifyFunction(*llvmFn);
     return llvmFn;
+}
+
+llvm::FunctionType *CodeGenVisitor::extractFunctionType(const Function &stmt) {
+    auto params = stmt.m_Params;
+
+    // Return type
+    auto returnType = hasReturnType(fnExp)
+                      ? getTypeFromString(fnExp.list[4].string)
+                      : builder->getInt32Ty();
+
+    // Parameter types
+    std::vector<llvm::Type*> paramTypes{};
+
+    for (auto& param : params) {
+        auto paramTy = extractVarType(param);
+        paramTypes.push_back(paramTy);
+    }
+
+    return llvm::FunctionType::get(returnType, paramTypes, /* varargs */ false);
 }
 
 void CodeGenVisitor::createFunctionBlock(llvm::Function *llvmFn) {
