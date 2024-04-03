@@ -10,9 +10,18 @@ That AST was previouslly tree-walked by `Interpreter` class to eveluate statemen
         parser  lowering   backend (llc)
 ```
 
-Now `CodeGenVisitor` will perform tree-walking, but it will still need help from `Interpreter` since KarolaScript is dynamically typed language and LLVM IR is strongly types so we need to figure out the type of variable, parameter or return type.
-
 Currently `CodeGenVisitor` reuses the code in `interpreter/Environment` and `interpreter/Resolver` but it will be better if we made new Environment and Resolver classes and put them in `llvm-gen` to provide loose coupling.
+
+***
+
+### Runtime type tagging
+
+Since KarolaScript is dynamically typed language and LLVM IR is strongly types so we need to figure out the type of variable, parameter or return type.
+
+Type tagging is a strategy ised in dynamically typed languages to determine the type of a variable at runtime.
+In runtime type tagging, each object contains some sort of "tag" or "field" denoting what type it is.
+
+In this project that can be `Object` class with little modification to support storing stuff like `llvm::Value` or `llvm::Type`.
 
 ***
 
