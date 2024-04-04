@@ -6,7 +6,6 @@
 #include <llvm/IR/Verifier.h>
 #include <llvm/IR/Value.h>
 
-//#include "../interpreter/Interpreter.h"
 #include "./Environment.h"
 #include "../parser/Expr.h"
 #include "../parser/Stmt.h"
@@ -74,9 +73,8 @@ private:
         }
     };
 
-    Interpreter& m_Interpreter;
 public:
-    CodeGenVisitor(Interpreter& m_Interpreter);
+    CodeGenVisitor();
 
     /* This function unpacks every UniqueStmtPtr into a raw pointer and then executes it. This is because the "Visitor" does not
      * own the dynamically allocated statement objects, it only operates on them, so it should use raw pointers instead of a

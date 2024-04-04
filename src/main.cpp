@@ -7,8 +7,6 @@
 #include "interpreter/Resolver.h"
 #include "interpreter/RuntimeError.h"
 
-#include "llvm-gen/Generator.h"
-
 Interpreter interpreter = Interpreter();
 Resolver resolver = Resolver(interpreter);
 

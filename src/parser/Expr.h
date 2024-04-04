@@ -49,6 +49,7 @@ class Expr {
 public:
     virtual ~Expr() = default;
     virtual Object accept(ExprVisitor<Object>& visitor) = 0;
+    virtual llvm::Value *codegen(llvm::IRBuilder<>& builder) = 0;
 };
 
 class Assign : public Expr {

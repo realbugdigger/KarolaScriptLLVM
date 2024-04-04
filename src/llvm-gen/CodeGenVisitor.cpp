@@ -5,7 +5,7 @@
 // Make some "LLVM IR CodeGenException"
 #include "../interpreter/RuntimeError.h"
 
-CodeGenVisitor::CodeGenVisitor(Interpreter& interpreter) : m_Interpreter(interpreter) {
+CodeGenVisitor::CodeGenVisitor() {
     moduleInit();
     setupExternFunctions();
 }
@@ -63,11 +63,11 @@ llvm::Value *CodeGenVisitor::visitAssignExpr(Assign &expr) {
 //        throw new IRCodeGenException(
 //                std::string("Assigning a null expr to " + expr.identifier->varName));
     }
-    llvm::Value *assignedVal = expr.m_Value->codegen(*this);
-    llvm::Value *id = expr.identifier->codegen(*this);
+    llvm::Value* assignedVal = expr.m_Value->codegen();
+    llvm::Value* id = llvm::Twine(expr.m_Name.lexeme);  //expr.identifier->codegen(*this);
     if (id == nullptr) {
 //        throw new CodeGenException(std::string("Trying to assign to a null id: " +
-//                                                 expr.identifier->varName));
+//                                                 expr.m_name.lexeme));
     }
     auto distance = localsDistances.find(&expr);
     if (distance != localsDistances.end()) {
@@ -158,6 +158,10 @@ void CodeGenVisitor::visitFunctionStmt(Function &stmt) {
     compileFunction(&stmt);
 }
 
+void CodeGenVisitor::visitReturnStmt(Return &stmt) {
+    builder->CreateRet(compile(stmt.m_Value->get()));
+}
+
 void CodeGenVisitor::visitBreakStmt(Break &stmt) {
 //    To generate equivalent LLVM IR for break statement, you need to utilize IRBuilder
 //    to create a branch instruction to the corresponding block where the loop ends.
@@ -180,11 +184,11 @@ void CodeGenVisitor::visitBreakStmt(Break &stmt) {
 }
 
 void CodeGenVisitor::visitLetStmt(Let &stmt) {
-    if (expr.boundExpr == nullptr) {
-        throw new IRCodegenException(
-                std::string("Let - binding a null expr to " + expr.varName));
+    if (!stmt.m_Initializer.has_value()) {
+//        throw new IRCodegenException(
+//                std::string("Let - binding a null expr to " + expr.varName));
     }
-    llvm::Value *boundVal = expr.boundExpr->codegen(*this);
+    llvm::Value *boundVal = stmt.m_Initializer->get()->codegen();
 
     // put allocainst in entry block of parent function, to be optimised by
     // mem2reg
@@ -192,51 +196,34 @@ void CodeGenVisitor::visitLetStmt(Let &stmt) {
     llvm::IRBuilder<> TmpBuilder(&(parentFunction->getEntryBlock()),
                                  parentFunction->getEntryBlock().begin());
     llvm::AllocaInst *var = TmpBuilder.CreateAlloca(boundVal->getType(), nullptr,
-                                                    llvm::Twine(expr.varName));
-    varEnv[expr.varName] = var;
-    builder->CreateStore(boundVal, var);
-    return boundVal;
-
-
-
-
-
-
-
-
-
-    // maybe check if already contains key with stmt.m_Name.lexeme, if yes throw RuntimeError
-
-    Object value;
-    // If the variable has an initializer, evaluate the initializer.
-    if (stmt.m_Initializer.has_value()) {
-        value = m_Interpreter.evaluate(stmt.m_Initializer->get());
-    }
+                                                    llvm::Twine(stmt.m_Name.lexeme));
 
     // Define the variable in the current environment with the given identifier and value
-    environment->define(stmt.m_Name.lexeme, value);
+    environment->define(stmt.m_Name.lexeme, var);
+
+    builder->CreateStore(boundVal, var);
 }
 
 void CodeGenVisitor::visitWhileStmt(While &stmt) {
     // condition
-    auto condBlock = createBasicBlock("cond", fn);
+    auto condBlock = createBasicBlock("condition", fn);
     builder->CreateBr(condBlock);
 
     // Body, while-end blocks
     auto bodyBlock = createBasicBlock("body");
     auto loopEndBlock = createBasicBlock("loopend");
 
-    // Compile <cond>
+    // Compile <condition>
     builder->SetInsertPoint(condBlock);
-    auto cond = gen(exp.list[1]);
+    auto condition = gen(exp.list[1]);
 
     // Condition branch
-    builder->CreateCondBr(cond, bodyBlock, loopEndBlock);
+    builder->CreateCondBr(condition, bodyBlock, loopEndBlock);
 
     // Body
     fn->getBasicBlockList().push_back(bodyBlock);
     builder->SetInsertPoint(bodyBlock);
-    generate(stmt.m_Body);
+    compile(stmt.m_Body.get());
     builder->CreateBr(condBlock);
 
     fn->getBasicBlockList().push_back(loopEndBlock);
@@ -245,8 +232,43 @@ void CodeGenVisitor::visitWhileStmt(While &stmt) {
     builder->getInt32(0);
 }
 
-void CodeGenVisitor::compile(Stmt *stmt) {
-    stmt->accept(this);
+void CodeGenVisitor::visitIfStmt(If &stmt) {
+    // checkout IF video again for improving this
+
+    // compile <cond>
+    auto cond = stmt.m_Condition->codegen();
+
+    // then block
+    auto thenBlock = createBasicBlock("then", fn);
+    auto elseBlock = createBasicBlock("else", fn);
+    auto ifEndBlock = createBasicBlock("ifend", fn);
+
+    // Condition branch
+    builder->CreateCondBr(cond, thenBlock, elseBlock);
+
+    // then branch
+    builder->SetInsertPoint(thenBlock);
+    auto thenRes = compile(stmt.m_ThenBranch.get());
+    builder->CreateBr(ifEndBlock);
+
+    // else branch
+    builder->SetInsertPoint(elseBlock);
+    auto elseRes = compile(stmt.m_ElseBranch->get());
+    builder->CreateBr(ifEndBlock);
+
+    builder->SetInsertPoint(ifEndBlock);
+
+    // Result of the if expression is phi
+    auto phi = builder->CreatePHI(builder->getInt32Ty(), 2, "tmpif");
+
+    phi->addIncoming(thenRes, thenBlock);
+    phi->addIncoming(elseRes, elseBlock);
+
+//    return phi;
+}
+
+void CodeGenVisitor::compile(Stmt* stmt) {
+    stmt->accept(*this);
 }
 
 void CodeGenVisitor::moduleInit() {
