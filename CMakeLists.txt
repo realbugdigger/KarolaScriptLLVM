@@ -57,6 +57,8 @@ add_executable(KarolaScript src/main.cpp
         src/llvm-gen/CodeGenVisitor.cpp
         src/llvm-gen/Environment.h
         src/llvm-gen/Environment.cpp
+        src/llvm-gen/KarolaScriptNamespace.h
+        src/llvm-gen/KarolaScriptContext.h
 )
 
 
