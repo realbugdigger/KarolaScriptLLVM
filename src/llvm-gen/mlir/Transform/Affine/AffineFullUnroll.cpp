@@ -7,12 +7,10 @@
 #include "mlir/Pass/Pass.h"
 
 namespace mlir {
-    namespace tutorial {
-
         using mlir::affine::AffineForOp;
         using mlir::affine::loopUnrollFull;
 
-// A pass that manually walks the IR
+        // A pass that manually walks the IR
         void AffineFullUnrollPass::runOnOperation() {
             getOperation().walk([&](AffineForOp op) {
                 if (failed(loopUnrollFull(op))) {
@@ -22,7 +20,7 @@ namespace mlir {
             });
         }
 
-// A pattern that matches on AffineForOp and unrolls it.
+        // A pattern that matches on AffineForOp and unrolls it.
         struct AffineFullUnrollPattern :
                 public OpRewritePattern<AffineForOp> {
             AffineFullUnrollPattern(mlir::MLIRContext *context)
@@ -37,7 +35,7 @@ namespace mlir {
             }
         };
 
-// A pass that invokes the pattern rewrite engine.
+        // A pass that invokes the pattern rewrite engine.
         void AffineFullUnrollPassAsPatternRewrite::runOnOperation() {
             mlir::RewritePatternSet patterns(&getContext());
             patterns.add<AffineFullUnrollPattern>(&getContext());
@@ -45,6 +43,4 @@ namespace mlir {
             // the pattern application.
             (void)applyPatternsAndFoldGreedily(getOperation(), std::move(patterns));
         }
-
-    } // namespace tutorial
 } // namespace mlir
