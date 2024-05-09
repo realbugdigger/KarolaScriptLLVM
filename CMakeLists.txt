@@ -8,6 +8,14 @@ set(CMAKE_CXX_STANDARD 17)
 set(LLVM_DIR "/home/marko/reserve/llvm-project/build/lib/cmake/llvm/")
 set(MLIR_DIR "/home/marko/reserve/llvm-project/build/lib/cmake/mlir/")
 
+# The path to mlir-tblgen binary
+set(MLIR_TABLEGEN_EXE "/home/marko/reserve/llvm-project/build/tools/mlir/tools/mlir-tblgen")
+
+# Define the paths to your source directories (mlir includes and lib)
+set(SOURCE_DIR  ${CMAKE_CURRENT_SOURCE_DIR}/src/llvm-gen/mlir)
+set(INCLUDE_DIR ${SOURCE_DIR}/include)
+set(LIB_DIR ${SOURCE_DIR}/lib)
+
 find_package(LLVM REQUIRED CONFIG)
 find_package(MLIR REQUIRED CONFIG)
 
@@ -21,6 +29,37 @@ include_directories(${MLIR_INCLUDE_DIRS})
 add_definitions(${MLIR_DEFINITIONS})
 
 
+file(GLOB_RECURSE TD_FILES ${INCLUDE_DIR}/*.td)
+
+file(GLOB_RECURSE INC_FILES ${INCLUDE_DIR}/*.inc)
+
+foreach (TD_FILE ${TD_FILES})
+
+    # Remove the suffix *.td from TD_FILE
+    string(REGEX REPLACE "\.td$" "" BASE_FILE ${TD_FILE})
+
+    # Construct the paths for the output `.inc` files
+    set(OUT_CPP_INC_FILE ${BASE_FILE}.cpp.inc)
+    set(OUT_H_INC_FILE ${BASE_FILE}.h.inc)
+
+    # Create the custom command for running `mlir-tblgen`
+    add_custom_command(OUTPUT "${OUT_H_INC_FILE}" "${OUT_CPP_INC_FILE}"
+                        DEPENDS "${MLIR_TABLEGEN_EXE}" "${TD_FILE}"
+                        COMMAND "${MLIR_TABLEGEN_EXE}" -gen-op-decls -I ${INCLUDE_DIR}
+                            -I ${CMAKE_SOURCE_DIR}/llvm-project/llvm/include -I ${CMAKE_SOURCE_DIR}/llvm-project/mlir/include ${TD_FILE} -o ${OUT_H_INC_FILE} # check and confirm this twice !!!!!!!!!!
+                        COMMAND "${MLIR_TABLEGEN_EXE}" -gen-op-decls -I ${INCLUDE_DIR}
+                            -I ${CMAKE_SOURCE_DIR}/llvm-project/llvm/include -I ${CMAKE_SOURCE_DIR}/llvm-project/mlir/include ${TD_FILE} -o ${OUT_CPP_INC_FILE} # check and confirm this twice !!!!!!!!!!
+                        COMMENT "Generating MLIR operation declarations and definitions for ${BASE_FILE}")
+
+    list(APPEND INC_FILES ${OUT_H_INC_FILE} ${OUT_CPP_INC_FILE})
+
+endforeach (TD_FILE)
+
+add_library(
+#        MyDialect
+#        MyPass
+        ${INC_FILES}
+)
 
 add_executable(KarolaScript src/main.cpp
         src/lexer/lexer.h

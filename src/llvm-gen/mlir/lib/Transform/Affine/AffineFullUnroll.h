@@ -8,8 +8,7 @@
 
 namespace mlir {
     class AffineFullUnrollPass
-            : public PassWrapper<AffineFullUnrollPass,
-                    mlir::OperationPass<mlir::func::FuncOp>> {
+            : public PassWrapper<AffineFullUnrollPass, mlir::OperationPass<mlir::func::FuncOp>> {
     private:
         void runOnOperation() override;
 
