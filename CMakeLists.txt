@@ -55,6 +55,10 @@ foreach (TD_FILE ${TD_FILES})
 
 endforeach (TD_FILE)
 
+## Add build rule for dialects here
+
+### ...
+
 add_library(
 #        MyDialect
 #        MyPass

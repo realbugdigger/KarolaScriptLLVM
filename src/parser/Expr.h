@@ -60,7 +60,7 @@ public:
     ///
     /// \param ctx is the context object of the semantic analyzer.
     virtual UniqueStmtPtr analyze(KarolaScriptContext &ctx) = 0; // this is actually inside Resolver.h so we can comment it out probably
-    // to confirm look again at tutorial 06
+    // to confirm look again at tutorial 06 (Yt series - How to write compiler with LLVM and MLIR)
 
     /// Genenates the correspondig KSIR of the expressoin and attach it to the
     /// module of the given namespace.
