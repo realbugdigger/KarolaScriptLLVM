@@ -10,7 +10,7 @@ That AST was previouslly tree-walked by `Interpreter` class to eveluate statemen
         parser  lowering   backend (llc)
 ```
 
-Currently `CodeGenVisitor` reuses the code in `interpreter/Environment` and `interpreter/Resolver` but it will be better if we made new Environment and Resolver classes and put them in `llvm-gen` to provide loose coupling.
+Currently `CodeGenVisitor` reuses the code in `interpreter/Environment` and `interpreter/Resolver` but it will be better if we made new Environment and Resolver classes and put them in `middleware` to provide loose coupling.
 
 ***
 

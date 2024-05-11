@@ -12,7 +12,7 @@ set(MLIR_DIR "/home/marko/reserve/llvm-project/build/lib/cmake/mlir/")
 set(MLIR_TABLEGEN_EXE "/home/marko/reserve/llvm-project/build/tools/mlir/tools/mlir-tblgen")
 
 # Define the paths to your source directories (mlir includes and lib)
-set(SOURCE_DIR  ${CMAKE_CURRENT_SOURCE_DIR}/src/llvm-gen/mlir)
+set(SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/src/middleware/mlir)
 set(INCLUDE_DIR ${SOURCE_DIR}/include)
 set(LIB_DIR ${SOURCE_DIR}/lib)
 
@@ -96,12 +96,12 @@ add_executable(KarolaScript src/main.cpp
         src/interpreter/KarolaScriptAnonFunction.cpp
         src/util/ErrorReporter.cpp
         src/parser/Parser.cpp
-        src/llvm-gen/CodeGenVisitor.h
-        src/llvm-gen/CodeGenVisitor.cpp
-        src/llvm-gen/Environment.h
-        src/llvm-gen/Environment.cpp
-        src/llvm-gen/KarolaScriptNamespace.h
-        src/llvm-gen/KarolaScriptContext.h
+        src/middleware/CodeGenVisitor.h
+        src/middleware/CodeGenVisitor.cpp
+        src/middleware/Environment.h
+        src/middleware/Environment.cpp
+        src/middleware/KarolaScriptNamespace.h
+        src/middleware/KarolaScriptContext.h
 )
 
 
