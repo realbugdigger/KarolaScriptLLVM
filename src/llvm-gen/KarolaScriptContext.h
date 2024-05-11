@@ -12,7 +12,9 @@
 #include "KarolaScriptNamespace.h"
 
 enum CompilationPhase {
-    KSIR,
+    Parse,
+    Analysis,
+    KSIR, // an IR that follows the AST
     MLIR, // Lowered KSIR to other dialects
     LIR,  // Lowered to the llvm ir dialect
     IR,   // Lowered to the LLVMIR itself
@@ -26,7 +28,9 @@ class KarolaScriptContext {
 public:
     llvm::LLVMContext llvmContext;
     mlir::MLIRContext mlirContext;
+
     mlir::PassManager pm;
+
     std::string targetTriple;
 
     /// Insert the given `ns` into the context. The Context object is
@@ -48,20 +52,27 @@ public:
 
     KarolaScriptContext()
             : pm(&mlirContext), targetPhase(CompilationPhase::NoOptimization) {
-        mlirContext.getOrLoadDialect<serene::slir::SereneDialect>();
-        mlirContext.getOrLoadDialect<mlir::StandardOpsDialect>();
+        mlirContext.getOrLoadDialect<::ks::KarolaScriptDialect>();
+        mlirContext.getOrLoadDialect<mlir:: StandardOpsDialect>();
         // TODO: Get the crash report path dynamically from the cli
-        // pm.enableCrashReproducerGeneration("/home/lxsameer/mlir.mlir");
+        // pm.enableCrashReproducerGeneration("/home/marko/mlir.mlir");
 
         // TODO: Set the target triple with respect to the CLI args
         targetTriple = llvm::sys::getDefaultTargetTriple();
     };
+
+    /// Creates a new context object. Contexts are used through out the compilation
+    /// process to store the state
+    std::unique_ptr<KarolaScriptContext> makeKarolaScriptContext() {
+        return std::make_unique<KarolaScriptContext>();
+    }
 
     /// Set the target compilation phase of the compiler. The compilation
     /// phase dictates the behavior and the output type of the compiler.
     void setOperationPhase(CompilationPhase phase);
 
     CompilationPhase getTargetPhase() { return targetPhase; };
+
     int getOptimizationLevel();
 
 private:
@@ -77,7 +88,3 @@ private:
     std::string current_ns;
 
 };
-
-/// Creates a new context object. Contexts are used through out the compilation
-/// process to store the state
-std::unique_ptr<KarolaScriptContext> makeKarolaScriptContext();
