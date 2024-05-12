@@ -1,6 +1,8 @@
 #include "KarolaScriptContext.h"
 #include "KarolaScriptNamespace.h"
 
+#include <llvm/Support/FormatVariadic.h>
+
 void KarolaScriptContext::insertNS(std::shared_ptr<KarolaScriptNamespace> ns) {
     namespaces[ns->name] = ns;
 }
@@ -24,8 +26,7 @@ bool KarolaScriptContext::setCurrentNS(llvm::StringRef ns_name) {
 
 std::shared_ptr<KarolaScriptNamespace> KarolaScriptContext::getCurrentNS() {
     if (this->current_ns.empty() || !namespaces.count(this->current_ns)) {
-        panic(*this, llvm::formatv("getCurrentNS: Namespace '{0}' does not exist",
-                                   this->current_ns)
+        panic(*this, llvm::formatv("getCurrentNS: Namespace '{0}' does not exist",this->current_ns)
                 .str());
     }
 

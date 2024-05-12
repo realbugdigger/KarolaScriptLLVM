@@ -8,6 +8,8 @@
 #include "../util/Object.h"
 #include "../util/common.h"
 
+#include "../middleware/KarolaScriptNamespace.h"
+
 //class Stmt;
 
 class Assign;
@@ -49,23 +51,11 @@ class Expr {
 public:
     virtual ~Expr() = default;
     virtual Object accept(ExprVisitor<Object>& visitor) = 0;
-    virtual llvm::Value *codegen(llvm::IRBuilder<>& builder) = 0;
 
-    /// ?????
-
-    /// Analyzes the semantics of current node and return a new node in case
-    /// that we need to semantically rewrite the current node and replace it with
-    /// another node. For example to change from a List containing `(def a b)`
-    /// to a `Def` node that represents defining a new binding.
-    ///
-    /// \param ctx is the context object of the semantic analyzer.
-    virtual UniqueStmtPtr analyze(KarolaScriptContext &ctx) = 0; // this is actually inside Resolver.h so we can comment it out probably
-    // to confirm look again at tutorial 06 (Yt series - How to write compiler with LLVM and MLIR)
-
-    /// Genenates the correspondig KSIR of the expressoin and attach it to the
+    /// Generates the corresponding KSIR of the expression and attach it to the
     /// module of the given namespace.
     ///
-    /// \param ns The namespace that current expression is in it.
+    /// @param ns The namespace that current expression is in it.
     virtual void generateIR(KarolaScriptNamespace &ns) = 0;
 };
 

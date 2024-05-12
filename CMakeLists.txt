@@ -59,11 +59,12 @@ endforeach (TD_FILE)
 
 ### ...
 
-add_library(
-#        MyDialect
-#        MyPass
-        ${INC_FILES}
-)
+#add_library(
+##        MyDialect
+##        MyPass
+#        ${INC_FILES}
+#        src/middleware/Environment.cpp
+#)
 
 add_executable(KarolaScript src/main.cpp
         src/lexer/lexer.h
@@ -102,6 +103,8 @@ add_executable(KarolaScript src/main.cpp
         src/middleware/Environment.cpp
         src/middleware/KarolaScriptNamespace.h
         src/middleware/KarolaScriptContext.h
+        src/middleware/KarolaScriptNamespace.cpp
+        src/middleware/KarolaScriptContext.cpp
 )
 
 
