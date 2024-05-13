@@ -105,6 +105,7 @@ add_executable(KarolaScript src/main.cpp
         src/middleware/KarolaScriptContext.h
         src/middleware/KarolaScriptNamespace.cpp
         src/middleware/KarolaScriptContext.cpp
+        src/middleware/utils/precompiles.h
 )
 
 
