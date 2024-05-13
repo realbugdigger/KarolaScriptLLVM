@@ -97,8 +97,8 @@ add_executable(KarolaScript src/main.cpp
         src/interpreter/KarolaScriptAnonFunction.cpp
         src/util/ErrorReporter.cpp
         src/parser/Parser.cpp
-        src/middleware/CodeGenVisitor.h
-        src/middleware/CodeGenVisitor.cpp
+        src/middleware/llvm-gen/CodeGenVisitor.h
+        src/middleware/llvm-gen/CodeGenVisitor.cpp
         src/middleware/Environment.h
         src/middleware/Environment.cpp
         src/middleware/KarolaScriptNamespace.h
@@ -106,6 +106,10 @@ add_executable(KarolaScript src/main.cpp
         src/middleware/KarolaScriptNamespace.cpp
         src/middleware/KarolaScriptContext.cpp
         src/middleware/utils/precompiles.h
+        src/middleware/ksir/ksir.h
+        src/middleware/ksir/ksir.cpp
+        src/middleware/mlir/lib/Dialect/test_dialect.h
+        src/middleware/mlir/lib/Dialect/test_dialect.cpp
 )
 
 

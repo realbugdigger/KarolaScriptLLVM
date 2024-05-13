@@ -3,7 +3,7 @@
 
 // TODO
 // Make some "LLVM IR CodeGenException"
-#include "../interpreter/RuntimeError.h"
+#include "../../interpreter/RuntimeError.h"
 
 CodeGenVisitor::CodeGenVisitor() {
     moduleInit();
