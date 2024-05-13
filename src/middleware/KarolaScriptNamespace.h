@@ -32,6 +32,8 @@ private:
     /// Th root environment to store the MLIR value during the IR generation phase.
     Environment<llvm::StringRef, mlir::Value> symbolTable;
 
+    std::vector<UniqueStmtPtr>& ast;
+
 public:
     KarolaScriptNamespace(KarolaScriptContext &ctx, llvm::StringRef ns_name,
             llvm::Optional<llvm::StringRef> filename);
@@ -45,6 +47,10 @@ public:
     /// Compile the namespace to a llvm module.
     /// It will call the `generate` method of the namespace to generate the IR.
     std::unique_ptr<llvm::Module> compileToLLVM();
+
+    void addNamespaceAst(std::vector<UniqueStmtPtr>& astNodes);
+
+    std::vector<UniqueStmtPtr>& getTree();
 
     /// Run all the passes specified in the context on the given MLIR ModuleOp.
     mlir::LogicalResult runPasses(mlir::ModuleOp &m);

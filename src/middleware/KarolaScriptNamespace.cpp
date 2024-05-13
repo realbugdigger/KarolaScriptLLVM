@@ -20,8 +20,8 @@ mlir::OwningOpRef<mlir::ModuleOp> KarolaScriptNamespace::generate() {
     // Since nodes will have access to the a reference of the
     // namespace they can use the builder and keep adding more
     // operations to the module via the builder
-    for (auto &x : getTree()) {
-        x->generateIR(*this, module);
+    for (auto &statement : getTree()) {
+        statement->generateIR(*this, module);
     }
 
     if (mlir::failed(mlir::verify(module))) {
@@ -54,6 +54,14 @@ std::unique_ptr<llvm::Module> KarolaScriptNamespace::compileToLLVM() {
     }
 
     return llvm::None;
+}
+
+void KarolaScriptNamespace::addNamespaceAst(std::vector<UniqueStmtPtr>& astNodes) {
+    ast = astNodes;
+}
+
+std::vector<UniqueStmtPtr>& KarolaScriptNamespace::getTree() {
+    return ast;
 }
 
 mlir::LogicalResult KarolaScriptNamespace::runPasses(mlir::ModuleOp &m) {
