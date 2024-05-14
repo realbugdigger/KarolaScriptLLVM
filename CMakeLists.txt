@@ -111,6 +111,7 @@ add_executable(KarolaScript src/main.cpp
         src/middleware/mlir/lib/Dialect/test_dialect.h
         src/middleware/mlir/lib/Dialect/test_dialect.cpp
         src/middleware/mlir/lib/Dialect/Polynomial/PolyDialect.cpp
+        src/middleware/mlir/lib/Dialect/Polynomial/PolyOps.cpp
 )
 
 
