@@ -45,6 +45,9 @@ public:
     void resolve(Stmt* stmt);
     void resolve(Expr* expr);
 
+    /// ?????
+    void resolve(KarolaScriptContext& ctx, const std::vector<UniqueStmtPtr> &statements);
+
     Object visitSetExpr(Set& expr) override;
     Object visitLogicalExpr(Logical& expr) override;
     Object visitLiteralExpr(Literal& expr) override;

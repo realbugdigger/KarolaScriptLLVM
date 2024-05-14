@@ -1,8 +1,9 @@
 # KarolaScript on LLVM (*project in progress*)
 
-Idea is to make "tree-walking code generation"; so source code goes through lexer and parser and finally ends up in AST.
 
-That AST was previouslly tree-walked by `Interpreter` class to eveluate statements and expressions.
+The initial idea was to make "tree-walking code generation"; so source code goes through lexer and parser and finally ends up in AST.
+
+That AST will be walked and LLVM IR would be generated during walk. Look in `middleware/llvm-gen` for these files.
 
 ```
 .ks file --> AST --> LLVM IR --> assembly
@@ -10,18 +11,26 @@ That AST was previouslly tree-walked by `Interpreter` class to eveluate statemen
         parser  lowering   backend (llc)
 ```
 
-Currently `CodeGenVisitor` reuses the code in `interpreter/Environment` and `interpreter/Resolver` but it will be better if we made new Environment and Resolver classes and put them in `llvm-gen` to provide loose coupling.
+While working on that I found about something called MLIR.
 
-***
+The framework built for language hackers which can be used for sequential lowering.
 
-### Runtime type tagging
+It will help us when writing language specific optimizations.
 
-Since KarolaScript is dynamically typed language and LLVM IR is strongly types so we need to figure out the type of variable, parameter or return type.
+#### Usefull resorces while on LLVM and MLIR journey:
+- https://github.com/j2kun/mlir-tutorial
+- https://mlir.llvm.org/docs/Tutorials/Toy/Ch-1/
+- https://medium.com/sniper-ai/mlir-tutorial-create-your-custom-dialect-lowering-to-llvm-ir-dialect-system-1-1f125a6a3008
+- https://www.youtube.com/watch?v=Ij4LswX1tZU&list=PLlONLmJCfHTo9WYfsoQvwjsa5ZB6hjOG5&index=1
+- https://llvm.org/docs/TableGen/ProgRef.html
+- https://mlir.llvm.org/docs/DefiningDialects/Operations/
+- https://mlir.llvm.org/docs/PassManagement/#operation-pass-static-filtering-by-op-type
+- Interesting Passes and Dialects:
+  - https://mlir.llvm.org/docs/Dialects/MathOps/
+  - https://mlir.llvm.org/docs/Dialects/ArithOps/
+  - https://mlir.llvm.org/docs/Dialects/Linalg/
+  - https://mlir.llvm.org/docs/Dialects/ControlFlowDialect/
 
-Type tagging is a strategy ised in dynamically typed languages to determine the type of a variable at runtime.
-In runtime type tagging, each object contains some sort of "tag" or "field" denoting what type it is.
-
-In this project that can be `Object` class with little modification to support storing stuff like `llvm::Value` or `llvm::Type`.
 
 ***
 

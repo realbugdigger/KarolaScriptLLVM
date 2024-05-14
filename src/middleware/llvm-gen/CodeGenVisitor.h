@@ -6,9 +6,9 @@
 #include <llvm/IR/Verifier.h>
 #include <llvm/IR/Value.h>
 
-#include "./Environment.h"
-#include "../parser/Expr.h"
-#include "../parser/Stmt.h"
+#include "../Environment.h"
+#include "../../parser/Expr.h"
+#include "../../parser/Stmt.h"
 
 class CodeGenVisitor : public ExprVisitor<llvm::Value*>, public StmtVisitor {
 private:

@@ -8,6 +8,8 @@
 #include "../util/Object.h"
 #include "../util/common.h"
 
+#include "../middleware/KarolaScriptNamespace.h"
+
 //class Stmt;
 
 class Assign;
@@ -49,7 +51,12 @@ class Expr {
 public:
     virtual ~Expr() = default;
     virtual Object accept(ExprVisitor<Object>& visitor) = 0;
-    virtual llvm::Value *codegen(llvm::IRBuilder<>& builder) = 0;
+
+    /// Generates the corresponding KSIR of the expression and attach it to the
+    /// module of the given namespace.
+    ///
+    /// @param ns The namespace that current expression is in it.
+    virtual void generateIR(KarolaScriptNamespace &ns) = 0;
 };
 
 class Assign : public Expr {
