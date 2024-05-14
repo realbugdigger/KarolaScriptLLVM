@@ -47,12 +47,12 @@ def ValueOp: KS_Op<"value"> {
     let arguments = (ins I64Attr:$value);
     let results = (outs I64);
 
-    //let verifier = [{ return ks::sir::verify(*this); }];
+    //let verifier = [{ return ::kssir::verify(*this); }];
 
     let builders = [
         OpBuilder<(ins "int":$value), [{
-        // Build from fix 64 bit int
-        build(odsBuilder, odsState, odsBuilder.getI64Type(), (uint64_t) value);
+            // Build from fix 64 bit int
+            build(odsBuilder, odsState, odsBuilder.getI64Type(), (uint64_t) value);
         }]>,
 
     ];
